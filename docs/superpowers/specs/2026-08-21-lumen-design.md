@@ -97,25 +97,56 @@ render path, and it is what makes the test suite runnable without a UI thread.
 
 Exactly the stack specified, plus one addition.
 
-| Package | Purpose |
-|---------|---------|
-| `WPF-UI` (lepoco) v3 stable | Fluent controls, Mica backdrop, light/dark theming |
-| `CommunityToolkit.Mvvm` | `[ObservableProperty]`, `[RelayCommand]` source generators |
-| `PDFtoImage` plus `bblanchon.PDFium.Win32` | PDF page to image; native PDFium arrives via NuGet |
-| `DocumentFormat.OpenXml` | Real `.docx`. **Not** Word Interop, which requires Word installed |
-| `System.Security.Cryptography.ProtectedData` | DPAPI for the API key |
-| `xUnit` plus `FluentAssertions` | Unit tests |
-| `FlaUI` | UI automation tests |
-| **`Markdig`** *(addition)* | Markdown parsing |
+Versions below were resolved against nuget.org on 2026-08-21 and are pinned, not floated.
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `WPF-UI` (lepoco) | **4.3.0** | Fluent controls, Mica backdrop, light/dark theming |
+| `CommunityToolkit.Mvvm` | 8.4.2 | `[ObservableProperty]`, `[RelayCommand]` source generators |
+| `PDFtoImage` | 5.4.0 | PDF page to image |
+| `bblanchon.PDFium.Win32` | 153.0.8009 | Native PDFium, arrives via NuGet |
+| `SkiaSharp` + `SkiaSharp.NativeAssets.Win32` | 4.150.1 | Transitive through PDFtoImage — see note |
+| `DocumentFormat.OpenXml` | 3.5.1 | Real `.docx`. **Not** Word Interop, which requires Word installed |
+| `System.Security.Cryptography.ProtectedData` | **8.0.0** | DPAPI for the API key |
+| `xunit` | 2.9.3 | Unit tests |
+| `FluentAssertions` | **7.2.2** | Assertions — see licence note |
+| `FlaUI.UIA3` | 5.0.0 | UI automation tests |
+| **`Markdig`** *(addition)* | 1.3.2 | Markdown parsing |
+
+### Version findings that changed this spec
+
+**WPF-UI is pinned to 4.3.0, not v3.** An earlier draft of this spec said to pin v3 and avoid a
+"v4 preview". That was wrong: 4.3.0 is the current *stable* release and 3.1.1 is the last v3.
+The v4 line has been stable since 4.0.0, so there is no preview risk to avoid and no reason to
+adopt a superseded major.
+
+**FluentAssertions is pinned to 7.2.2 because 8.x is not free.** Every release from 8.0.0 onward
+carries a paid commercial licence; 7.2.2 is the last Apache-2.0 version. Pinning to 7.2.2 keeps
+the package the build spec named while avoiding a licence obligation attached to a personal
+utility. `AwesomeAssertions` 9.6.0 is the maintained Apache-2.0 fork and is the drop-in
+alternative if tracking current matters more than keeping the original package name.
+
+**`ProtectedData` is pinned to 8.0.0, not the latest.** The newest release is 10.0.11, a .NET 10
+package. Pinning to the 8.0.x line matches the `net8.0` target.
+
+**PDFtoImage brings a second native dependency.** It depends transitively on **SkiaSharp
+4.150.1** plus `SkiaSharp.NativeAssets.Win32`, so the published output must carry **two** native
+DLLs — `pdfium.dll` *and* `libSkiaSharp.dll` — not one. This materially raises the single-file
+extraction risk identified in §18, because `IncludeNativeLibrariesForSelfExtract` has to place
+both correctly. **The published-build verification gate checks for both DLLs, and whether either
+requires the MSVC runtime.**
+
+PDFtoImage also declares Linux and macOS PDFium/Skia natives. A RID-specific
+`-r win-x64` publish filters those out, but the published payload size is checked to confirm it,
+rather than assumed.
+
+**Markdig 1.3.2** is a real stable release (the package moved 0.45.0 → 1.0.0 → 1.3.2).
 
 **Markdig justification.** Both the results panel and the Word exporter must understand the
 markdown Gemini returns. Hand-rolling CommonMark tables and nested emphasis is a bug farm.
 Markdig is MIT, pure managed, and has no native dependencies. It parses once into a
 `MarkdownDocument`; two visitors then walk it — a WPF `FlowDocument` renderer and an OpenXML
 renderer. One parser, two backends, both tested against the same fixtures.
-
-**WPF-UI v3 stable, not v4 preview.** v4 renamed namespaces; adopting a preview would risk a
-rewrite of every view if it shifts again.
 
 **`PublishTrimmed` stays off**, per the build spec — WPF does not trim reliably and produces
 `XamlParseException`s that only surface after install. Direct consequence: the installer will be
@@ -489,8 +520,9 @@ copy confirmation, export.
 
 | Risk | Handling |
 |------|----------|
-| Single-file plus PDFium native extraction | Test the **published** build, not `dotnet run`. Non-negotiable gate. |
+| Single-file extraction of **two** natives (`pdfium.dll` + `libSkiaSharp.dll`) | Test the **published** build, not `dotnet run`. Verify both DLLs and MSVC-runtime need. Non-negotiable gate. |
 | Installer size 90-130 MB | Accepted and stated. The direct cost of self-contained. |
-| WPF-UI v3 API surface | Pinned to v3 stable; no preview. |
+| WPF-UI API surface | Pinned to 4.3.0 stable. |
+| FluentAssertions 8.x licence | Pinned to 7.2.2, the last Apache-2.0 release. |
 | Live Gemini verification needs a real key | The app prompts. A key can be supplied for an end-to-end test; otherwise extraction is verified against a stubbed handler and the live path exercised manually. |
 | `SelectionMode="Extended"` behavior | Verified against the real control, not assumed. |
