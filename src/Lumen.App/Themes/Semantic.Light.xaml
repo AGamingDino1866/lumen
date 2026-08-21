@@ -1,0 +1,73 @@
+<!--
+    LAYER 2 OF 3: SEMANTIC (LIGHT)
+
+    Purpose-named aliases over the primitives. Switching theme replaces THIS LAYER ONLY, which is
+    why no view and no component token may reference a primitive directly.
+
+    Every key defined here has an identically named counterpart in Semantic.Dark.xaml. Adding a
+    token to one file without the other is a bug: the missing key throws at theme-switch time,
+    not at build time.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===================== Surfaces =====================
+         Canvas is warm bone rather than white: a reading tool should read as paper, not as a
+         clinical panel. Raised is pure white so page thumbnails and result text sit forward. -->
+    <SolidColorBrush x:Key="Lumen.Surface.Canvas" Color="{StaticResource Lumen.Primitive.Bone.50}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Raised" Color="{StaticResource Lumen.Primitive.Bone.0}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Sunken" Color="{StaticResource Lumen.Primitive.Bone.100}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Overlay" Color="{StaticResource Lumen.Primitive.Bone.0}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Scrim" Color="{StaticResource Lumen.Primitive.Scrim.Light}" />
+
+    <!-- ===================== Text =====================
+         Body text is charcoal, never pure black; pure black on bone reads as harsh. -->
+    <SolidColorBrush x:Key="Lumen.Text.Primary" Color="{StaticResource Lumen.Primitive.Ink.600}" />
+    <SolidColorBrush x:Key="Lumen.Text.Secondary" Color="{StaticResource Lumen.Primitive.Ink.400}" />
+    <SolidColorBrush x:Key="Lumen.Text.Disabled" Color="{StaticResource Lumen.Primitive.Ink.300}" />
+    <SolidColorBrush x:Key="Lumen.Text.OnAccent" Color="{StaticResource Lumen.Primitive.Bone.0}" />
+    <SolidColorBrush x:Key="Lumen.Text.OnInk" Color="{StaticResource Lumen.Primitive.Bone.0}" />
+
+    <!-- ===================== Borders ===================== -->
+    <SolidColorBrush x:Key="Lumen.Border.Subtle" Color="{StaticResource Lumen.Primitive.Bone.200}" />
+    <SolidColorBrush x:Key="Lumen.Border.Strong" Color="{StaticResource Lumen.Primitive.Bone.300}" />
+
+    <!-- ===================== Accent =====================
+         Scan blue. Used ONLY for selection state and the focus ring. -->
+    <SolidColorBrush x:Key="Lumen.Accent.Default" Color="{StaticResource Lumen.Primitive.Blue.600}" />
+    <SolidColorBrush x:Key="Lumen.Accent.Hover" Color="{StaticResource Lumen.Primitive.Blue.700}" />
+    <SolidColorBrush x:Key="Lumen.Accent.Muted" Color="{StaticResource Lumen.Primitive.Blue.100}" />
+    <SolidColorBrush x:Key="Lumen.Focus.Ring" Color="{StaticResource Lumen.Primitive.Blue.600}" />
+
+    <!-- ===================== Ink actions =====================
+         The primary button is near-black, not blue. Separating the two roles means the eye
+         never has to decide whether blue means "act" or "selected". -->
+    <SolidColorBrush x:Key="Lumen.Action.Default" Color="{StaticResource Lumen.Primitive.Ink.900}" />
+    <SolidColorBrush x:Key="Lumen.Action.Hover" Color="{StaticResource Lumen.Primitive.Ink.700}" />
+    <SolidColorBrush x:Key="Lumen.Action.Pressed" Color="{StaticResource Lumen.Primitive.Ink.600}" />
+    <SolidColorBrush x:Key="Lumen.Action.Disabled" Color="{StaticResource Lumen.Primitive.Bone.200}" />
+
+    <!-- ===================== Selection ===================== -->
+    <SolidColorBrush x:Key="Lumen.State.Selected.Border" Color="{StaticResource Lumen.Primitive.Blue.600}" />
+    <SolidColorBrush x:Key="Lumen.State.Selected.Fill" Color="{StaticResource Lumen.Primitive.Blue.100}" />
+    <SolidColorBrush x:Key="Lumen.State.Hover.Fill" Color="{StaticResource Lumen.Primitive.Bone.100}" />
+
+    <!-- ===================== Per-page extraction status ===================== -->
+    <SolidColorBrush x:Key="Lumen.Status.Queued" Color="{StaticResource Lumen.Primitive.Pastel.Yellow}" />
+    <SolidColorBrush x:Key="Lumen.Status.Queued.Fg" Color="{StaticResource Lumen.Primitive.Pastel.YellowText}" />
+    <SolidColorBrush x:Key="Lumen.Status.Running" Color="{StaticResource Lumen.Primitive.Pastel.Blue}" />
+    <SolidColorBrush x:Key="Lumen.Status.Running.Fg" Color="{StaticResource Lumen.Primitive.Pastel.BlueText}" />
+    <SolidColorBrush x:Key="Lumen.Status.Done" Color="{StaticResource Lumen.Primitive.Pastel.Green}" />
+    <SolidColorBrush x:Key="Lumen.Status.Done.Fg" Color="{StaticResource Lumen.Primitive.Pastel.GreenText}" />
+    <SolidColorBrush x:Key="Lumen.Status.Failed" Color="{StaticResource Lumen.Primitive.Pastel.Red}" />
+    <SolidColorBrush x:Key="Lumen.Status.Failed.Fg" Color="{StaticResource Lumen.Primitive.Pastel.RedText}" />
+
+    <!-- ===================== Danger ===================== -->
+    <SolidColorBrush x:Key="Lumen.Danger.Default" Color="{StaticResource Lumen.Primitive.Danger.500}" />
+
+    <!-- ===================== Skeleton =====================
+         Thumbnail placeholders. Skeletons, not spinners: the grid must never reflow. -->
+    <SolidColorBrush x:Key="Lumen.Skeleton.Base" Color="{StaticResource Lumen.Primitive.Bone.100}" />
+    <SolidColorBrush x:Key="Lumen.Skeleton.Sheen" Color="{StaticResource Lumen.Primitive.Bone.0}" />
+
+</ResourceDictionary>

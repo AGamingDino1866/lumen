@@ -1,0 +1,130 @@
+<!--
+    LAYER 1 OF 3: PRIMITIVES
+
+    Raw values with no meaning attached. This is the ONLY file in the application permitted to
+    contain a hex colour literal; a unit test (TokenDisciplineTests) fails the build if a
+    #RRGGBB appears in any other XAML file.
+
+    Nothing outside Themes/Semantic.*.xaml should reference these keys directly. Views consume
+    semantic and component tokens, so a theme change is a single-layer swap.
+
+    Palette provenance: the ui-ux-pro-max "Scanner & Document Manager" palette supplied the
+    scan blue and status hues; minimalist-ui supplied the warm bone canvas and the muted pastel
+    status vocabulary, and its ban on cool greys is why the neutrals below are warm.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ===================== Warm neutrals (bone) ===================== -->
+    <Color x:Key="Lumen.Primitive.Bone.0">#FFFFFFFF</Color>
+    <Color x:Key="Lumen.Primitive.Bone.50">#FFFBFBFA</Color>
+    <Color x:Key="Lumen.Primitive.Bone.100">#FFF7F6F3</Color>
+    <Color x:Key="Lumen.Primitive.Bone.200">#FFEAEAEA</Color>
+    <Color x:Key="Lumen.Primitive.Bone.300">#FFDCDBD7</Color>
+
+    <!-- ===================== Warm inks ===================== -->
+    <Color x:Key="Lumen.Primitive.Ink.100">#FFEDEDEB</Color>
+    <Color x:Key="Lumen.Primitive.Ink.200">#FFC9C8C3</Color>
+    <Color x:Key="Lumen.Primitive.Ink.300">#FFA1A09A</Color>
+    <Color x:Key="Lumen.Primitive.Ink.400">#FF787774</Color>
+    <Color x:Key="Lumen.Primitive.Ink.500">#FF5C5B58</Color>
+    <Color x:Key="Lumen.Primitive.Ink.600">#FF2F3437</Color>
+    <Color x:Key="Lumen.Primitive.Ink.700">#FF232322</Color>
+    <Color x:Key="Lumen.Primitive.Ink.800">#FF1A1A19</Color>
+    <Color x:Key="Lumen.Primitive.Ink.900">#FF111111</Color>
+    <Color x:Key="Lumen.Primitive.Ink.950">#FF2E2E2C</Color>
+
+    <!-- ===================== Scan blue =====================
+         Reserved for selection state and focus. It is never the primary button colour;
+         that role belongs to ink, so the two never compete for the same meaning. -->
+    <Color x:Key="Lumen.Primitive.Blue.100">#FFE1F3FE</Color>
+    <Color x:Key="Lumen.Primitive.Blue.400">#FF5B9DFF</Color>
+    <Color x:Key="Lumen.Primitive.Blue.500">#FF3B82F6</Color>
+    <Color x:Key="Lumen.Primitive.Blue.600">#FF2563EB</Color>
+    <Color x:Key="Lumen.Primitive.Blue.700">#FF1D4ED8</Color>
+    <Color x:Key="Lumen.Primitive.Blue.900">#FF1F6C9F</Color>
+
+    <!-- ===================== Muted status pastels =====================
+         Each background is paired with a darker text colour, so status is never carried by
+         hue alone; every chip also carries a word. -->
+    <Color x:Key="Lumen.Primitive.Pastel.Yellow">#FFFBF3DB</Color>
+    <Color x:Key="Lumen.Primitive.Pastel.YellowText">#FF956400</Color>
+    <Color x:Key="Lumen.Primitive.Pastel.Blue">#FFE1F3FE</Color>
+    <Color x:Key="Lumen.Primitive.Pastel.BlueText">#FF1F6C9F</Color>
+    <Color x:Key="Lumen.Primitive.Pastel.Green">#FFEDF3EC</Color>
+    <Color x:Key="Lumen.Primitive.Pastel.GreenText">#FF346538</Color>
+    <Color x:Key="Lumen.Primitive.Pastel.Red">#FFFDEBEC</Color>
+    <Color x:Key="Lumen.Primitive.Pastel.RedText">#FF9F2F2D</Color>
+
+    <!-- Dark-theme status backgrounds: deep tints rather than the light pastels, which
+         would glare against a dark canvas. -->
+    <Color x:Key="Lumen.Primitive.PastelDark.Yellow">#FF33291180</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.YellowText">#FFE0B650</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.Blue">#FF14283A</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.BlueText">#FF7FC1EE</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.Green">#FF1E2E22</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.GreenText">#FF7DD692</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.Red">#FF3A1F20</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.RedText">#FFF08F8D</Color>
+
+    <!-- ===================== Danger ===================== -->
+    <Color x:Key="Lumen.Primitive.Danger.500">#FFDC2626</Color>
+    <Color x:Key="Lumen.Primitive.Danger.400">#FFEF4444</Color>
+
+    <!-- ===================== Scrim ===================== -->
+    <Color x:Key="Lumen.Primitive.Scrim.Light">#66111111</Color>
+    <Color x:Key="Lumen.Primitive.Scrim.Dark">#99000000</Color>
+
+    <!-- ===================== Spacing (4px base) ===================== -->
+    <sys:Double x:Key="Lumen.Primitive.Space.1">4</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.2">8</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.3">12</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.4">16</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.5">20</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.6">24</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.8">32</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.10">40</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.12">48</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.16">64</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Space.24">96</sys:Double>
+
+    <!-- ===================== Radius =====================
+         Crisp, never pill-shaped for containers or primary buttons. -->
+    <CornerRadius x:Key="Lumen.Primitive.Radius.Sm">4</CornerRadius>
+    <CornerRadius x:Key="Lumen.Primitive.Radius.Md">8</CornerRadius>
+    <CornerRadius x:Key="Lumen.Primitive.Radius.Lg">12</CornerRadius>
+    <CornerRadius x:Key="Lumen.Primitive.Radius.Pill">999</CornerRadius>
+
+    <!-- ===================== Type scale =====================
+         Ratio ~1.15-1.2. Tracking is size-specific: negative as text grows, slightly positive
+         for small text and labels. A single global letter-spacing is wrong somewhere. -->
+    <sys:Double x:Key="Lumen.Primitive.Type.Size.Display">28</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Type.Size.Title">20</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Type.Size.Subtitle">16</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Type.Size.Body">14</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Type.Size.Small">12</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Type.Size.Label">11</sys:Double>
+
+    <!-- WPF expresses tracking as 1/1000 em on TextBlock.CharacterSpacing (an integer). -->
+    <sys:Int32 x:Key="Lumen.Primitive.Type.Track.Display">-20</sys:Int32>
+    <sys:Int32 x:Key="Lumen.Primitive.Type.Track.Title">-10</sys:Int32>
+    <sys:Int32 x:Key="Lumen.Primitive.Type.Track.Body">0</sys:Int32>
+    <sys:Int32 x:Key="Lumen.Primitive.Type.Track.Small">10</sys:Int32>
+    <sys:Int32 x:Key="Lumen.Primitive.Type.Track.Label">50</sys:Int32>
+
+    <sys:Double x:Key="Lumen.Primitive.Type.Leading.Tight">1.1</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Type.Leading.Snug">1.35</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Type.Leading.Body">1.6</sys:Double>
+
+    <!-- ===================== Bundled type =====================
+         Geist Sans and Geist Mono ship inside the assembly (SIL OFL), so the interface renders
+         identically everywhere with no system font dependency and no network fetch. -->
+    <FontFamily x:Key="Lumen.Primitive.Font.Sans">pack://application:,,,/Assets/Fonts/#Geist</FontFamily>
+    <FontFamily x:Key="Lumen.Primitive.Font.Mono">pack://application:,,,/Assets/Fonts/#Geist Mono</FontFamily>
+
+    <!-- ===================== Stroke weights ===================== -->
+    <sys:Double x:Key="Lumen.Primitive.Stroke.Hairline">1</sys:Double>
+    <sys:Double x:Key="Lumen.Primitive.Stroke.Selected">2</sys:Double>
+
+</ResourceDictionary>

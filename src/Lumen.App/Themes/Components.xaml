@@ -1,0 +1,366 @@
+<!--
+    LAYER 3 OF 3: COMPONENTS
+
+    Component tokens and the styles built from them. Colours here come from the SEMANTIC layer
+    only, never from primitives, so the light/dark swap needs no change in this file. Spacing,
+    radius, and type sizes are read from primitives because there is no theme-varying semantic
+    layer for them.
+
+    Interaction states are driven by VisualStateManager with VisualTransition rather than
+    Storyboard.Begin. VSM blends from the value currently on screen, so a state change part way
+    through another can be redirected instead of snapping back to the start; raw Storyboards
+    restart from zero and read as a stutter when a user moves quickly across a grid.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ===================== Component tokens ===================== -->
+    <CornerRadius x:Key="Lumen.PageTile.Radius">8</CornerRadius>
+    <Thickness x:Key="Lumen.PageTile.SelectedBorderThickness">2</Thickness>
+    <Thickness x:Key="Lumen.PageTile.BorderThickness">1</Thickness>
+    <sys:Double x:Key="Lumen.PageTile.Width">156</sys:Double>
+    <Thickness x:Key="Lumen.PageTile.Margin">6</Thickness>
+
+    <CornerRadius x:Key="Lumen.Button.Radius">6</CornerRadius>
+    <Thickness x:Key="Lumen.Button.Padding">16,9</Thickness>
+    <Thickness x:Key="Lumen.IconButton.Padding">8</Thickness>
+
+    <Thickness x:Key="Lumen.Panel.Padding">20</Thickness>
+    <sys:Double x:Key="Lumen.Divider.Thickness">1</sys:Double>
+    <CornerRadius x:Key="Lumen.Chip.Radius">999</CornerRadius>
+    <Thickness x:Key="Lumen.Chip.Padding">8,3</Thickness>
+    <sys:Double x:Key="Lumen.Icon.Size">18</sys:Double>
+    <sys:Double x:Key="Lumen.Icon.Stroke">1.6</sys:Double>
+
+    <!-- ===================== Focus visual =====================
+         Every focusable element gets a visible ring. Removing the focus outline without a
+         replacement is the single most common accessibility regression in a custom-styled app. -->
+    <Style x:Key="Lumen.FocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="-3"
+                               RadiusX="7" RadiusY="7"
+                               Stroke="{DynamicResource Lumen.Focus.Ring}"
+                               StrokeThickness="2"
+                               SnapsToDevicePixels="True" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================== Typography =====================
+         Tracking is size-specific. Hierarchy comes from weight, size, and leading as a set,
+         never from size alone. -->
+    <Style x:Key="Lumen.Text.Display" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Display}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+    </Style>
+
+    <Style x:Key="Lumen.Text.Title" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Title}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
+    </Style>
+
+    <Style x:Key="Lumen.Text.Subtitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Subtitle}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
+    </Style>
+
+    <Style x:Key="Lumen.Text.Body" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
+        <Setter Property="LineHeight" Value="22" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="Lumen.Text.Secondary" TargetType="TextBlock" BasedOn="{StaticResource Lumen.Text.Body}">
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />
+    </Style>
+
+    <Style x:Key="Lumen.Text.Small" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Small}" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />
+    </Style>
+
+    <!-- Small-caps label: used for the "Page 12" divider in the merged results view. -->
+    <Style x:Key="Lumen.Text.Label" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Label}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />
+    </Style>
+
+    <Style x:Key="Lumen.Text.Mono" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Small}" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />
+    </Style>
+
+    <!-- ===================== Icon ===================== -->
+    <Style x:Key="Lumen.IconPath" TargetType="Path">
+        <Setter Property="Stroke" Value="{DynamicResource Lumen.Text.Primary}" />
+        <Setter Property="StrokeThickness" Value="{StaticResource Lumen.Icon.Stroke}" />
+        <Setter Property="StrokeStartLineCap" Value="Round" />
+        <Setter Property="StrokeEndLineCap" Value="Round" />
+        <Setter Property="StrokeLineJoin" Value="Round" />
+        <Setter Property="Fill" Value="Transparent" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="Width" Value="{StaticResource Lumen.Icon.Size}" />
+        <Setter Property="Height" Value="{StaticResource Lumen.Icon.Size}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- ===================== Primary button =====================
+         Solid ink, not blue. Blue is reserved for selection and focus, so the two never
+         compete. Press feedback is scale(0.97) and fires on IsPressed, which WPF raises on
+         pointer DOWN, not on click. -->
+    <Style x:Key="Lumen.Button.Primary" TargetType="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Body}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.OnInk}" />
+        <Setter Property="Padding" Value="{StaticResource Lumen.Button.Padding}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Lumen.FocusVisual}" />
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Root"
+                                Background="{DynamicResource Lumen.Action.Default}"
+                                CornerRadius="{StaticResource Lumen.Button.Radius}"
+                                SnapsToDevicePixels="True">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="Scale" ScaleX="1" ScaleY="1" />
+                            </Border.RenderTransform>
+                            <Border.RenderTransformOrigin>0.5,0.5</Border.RenderTransformOrigin>
+                            <ContentPresenter x:Name="Content"
+                                              Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition GeneratedDuration="0:0:0.15" />
+                                </VisualStateGroup.Transitions>
+
+                                <VisualState x:Name="Normal" />
+
+                                <VisualState x:Name="MouseOver">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="Root"
+                                                        Storyboard.TargetProperty="Background.Color"
+                                                        To="{Binding Source={StaticResource Lumen.Primitive.Ink.700}}"
+                                                        Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Scale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         To="0.97" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="Scale"
+                                                         Storyboard.TargetProperty="ScaleY"
+                                                         To="0.97" Duration="0:0:0.16" />
+                                    </Storyboard>
+                                </VisualState>
+
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Root"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         To="0.45" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource Lumen.Action.Disabled}" />
+                            <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Disabled}" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================== Secondary button ===================== -->
+    <Style x:Key="Lumen.Button.Secondary" TargetType="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Body}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
+        <Setter Property="Padding" Value="{StaticResource Lumen.Button.Padding}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Lumen.FocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Root"
+                            Background="{DynamicResource Lumen.Surface.Raised}"
+                            BorderBrush="{DynamicResource Lumen.Border.Subtle}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource Lumen.Button.Radius}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource Lumen.State.Hover.Fill}" />
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource Lumen.Border.Strong}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================== Icon button ===================== -->
+    <Style x:Key="Lumen.Button.Icon" TargetType="Button">
+        <Setter Property="Padding" Value="{StaticResource Lumen.IconButton.Padding}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource Lumen.FocusVisual}" />
+        <!-- 32x32 keeps the hit target comfortable even though the glyph is 18px. -->
+        <Setter Property="MinWidth" Value="32" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource Lumen.Button.Radius}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource Lumen.State.Hover.Fill}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================== Text input ===================== -->
+    <Style x:Key="Lumen.TextBox" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Mono}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Lumen.Text.Primary}" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Root"
+                            Background="{DynamicResource Lumen.Surface.Raised}"
+                            BorderBrush="{DynamicResource Lumen.Border.Subtle}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource Lumen.Button.Radius}"
+                            SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource Lumen.Focus.Ring}" />
+                            <Setter TargetName="Root" Property="BorderThickness" Value="2" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================== Status chip =====================
+         Carries a word as well as a colour, so status never depends on hue alone. -->
+    <Style x:Key="Lumen.Chip" TargetType="Border">
+        <Setter Property="CornerRadius" Value="{StaticResource Lumen.Chip.Radius}" />
+        <Setter Property="Padding" Value="{StaticResource Lumen.Chip.Padding}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <Style x:Key="Lumen.Chip.Text" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Label}" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+
+    <!-- ===================== Divider =====================
+         A hairline rule. In the merged results view this is the page anchor: scroll sync
+         targets it, and hover or keyboard focus reveals per-page copy and retry. -->
+    <Style x:Key="Lumen.Divider" TargetType="Border">
+        <Setter Property="Height" Value="{StaticResource Lumen.Divider.Thickness}" />
+        <Setter Property="Background" Value="{DynamicResource Lumen.Border.Subtle}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- ===================== Tooltip =====================
+         BetweenShowDelay of zero means the second tooltip in a toolbar opens instantly. The
+         initial delay still prevents accidental activation; only the follow-ups are immediate,
+         which makes the whole toolbar feel faster. -->
+    <Style TargetType="ToolTip">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="500" />
+        <Setter Property="ToolTipService.BetweenShowDelay" Value="0" />
+        <Setter Property="Background" Value="{DynamicResource Lumen.Surface.Overlay}" />
+        <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Lumen.Border.Subtle}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Small}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource Lumen.Button.Radius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

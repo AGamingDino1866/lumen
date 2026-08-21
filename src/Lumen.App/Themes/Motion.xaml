@@ -1,0 +1,70 @@
+<!--
+    MOTION TOKENS
+
+    Durations and curves, named once so the motion spec is enforceable rather than aspirational.
+
+    WPF's built-in CubicEase is too weak to read as intentional, so the curves below are
+    KeySpline values matching the CSS cubic-beziers the motion spec calls for:
+        Lumen.Ease.Out   = cubic-bezier(0.23, 1,     0.32, 1)
+        Lumen.Ease.InOut = cubic-bezier(0.77, 0,     0.175, 1)
+
+    Three rules this file exists to support:
+      1. Exit is always faster than enter.
+      2. Nothing here exceeds 300ms; the user is in a task, not watching a show.
+      3. MotionService rewrites every Duration below to zero when the Windows
+         "Show animations" accessibility setting is off.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ===================== Curves ===================== -->
+    <KeySpline x:Key="Lumen.Ease.Out">0.23,1 0.32,1</KeySpline>
+    <KeySpline x:Key="Lumen.Ease.InOut">0.77,0 0.175,1</KeySpline>
+
+    <!-- ===================== Durations =====================
+         Named for the motion they carry, not for their length, so a timing change is a
+         one-line edit here rather than a search across every view. -->
+
+    <!-- Selection check badge: Scale in, 0.92 -> 1 plus fade.
+         Deliberately a Scale in and NOT a Pop in: overshoot is wrong for a tool the user
+         is working inside. Fires on pointer-initiated selection only. -->
+    <Duration x:Key="Lumen.Duration.BadgeIn">0:0:0.12</Duration>
+    <Duration x:Key="Lumen.Duration.BadgeOut">0:0:0.09</Duration>
+
+    <!-- Press feedback: scale 0.97, applied on pointer DOWN rather than on click,
+         so the surface acknowledges the press at the moment the user is watching. -->
+    <Duration x:Key="Lumen.Duration.Press">0:0:0.16</Duration>
+
+    <!-- Hover: colour and surface shifts only. -->
+    <Duration x:Key="Lumen.Duration.Hover">0:0:0.15</Duration>
+
+    <!-- Thumbnail: skeleton holds the aspect ratio, then the render crossfades in.
+         A scale-in would reflow the grid and move the scroll position. -->
+    <Duration x:Key="Lumen.Duration.ThumbnailFade">0:0:0.18</Duration>
+
+    <!-- Copy confirmation: Morph to a checkmark, hold, then ease back.
+         The hold is long enough to be unmissable, short enough not to block a second copy. -->
+    <Duration x:Key="Lumen.Duration.CopyMorph">0:0:0.20</Duration>
+    <Duration x:Key="Lumen.Duration.CopyHold">0:0:1.50</Duration>
+
+    <!-- Drop overlay: Fade in plus an inner Scale in. Exit is faster than enter. -->
+    <Duration x:Key="Lumen.Duration.OverlayIn">0:0:0.16</Duration>
+    <Duration x:Key="Lumen.Duration.OverlayOut">0:0:0.12</Duration>
+
+    <!-- Result block arrival: an individual Enter per page (fade plus 8px rise).
+         Explicitly NOT a stagger: these arrive when Gemini actually finishes each page, and
+         adding synthetic delay to a real wait is exactly the wrong instinct. -->
+    <Duration x:Key="Lumen.Duration.ResultEnter">0:0:0.20</Duration>
+
+    <!-- Dialogs and panels: Scale in from 0.96 with a scrim fade. -->
+    <Duration x:Key="Lumen.Duration.DialogIn">0:0:0.20</Duration>
+    <Duration x:Key="Lumen.Duration.DialogOut">0:0:0.14</Duration>
+
+    <!-- ===================== Transform constants ===================== -->
+    <sys:Double x:Key="Lumen.Scale.BadgeFrom">0.92</sys:Double>
+    <sys:Double x:Key="Lumen.Scale.Pressed">0.97</sys:Double>
+    <sys:Double x:Key="Lumen.Scale.DialogFrom">0.96</sys:Double>
+    <sys:Double x:Key="Lumen.Translate.ResultEnter">8</sys:Double>
+
+</ResourceDictionary>

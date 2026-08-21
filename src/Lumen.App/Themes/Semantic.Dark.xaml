@@ -1,0 +1,67 @@
+<!--
+    LAYER 2 OF 3: SEMANTIC (DARK)
+
+    Every key in Semantic.Light.xaml has a counterpart here. The dark palette is derived rather
+    than inverted: the neutrals stay warm (never pure black, which reads as a hole on an OLED
+    panel next to warm bone in light mode), and the accent is lifted from Blue.600 to Blue.400
+    because the darker blue does not clear WCAG AA against a dark canvas.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===================== Surfaces ===================== -->
+    <SolidColorBrush x:Key="Lumen.Surface.Canvas" Color="{StaticResource Lumen.Primitive.Ink.800}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Raised" Color="{StaticResource Lumen.Primitive.Ink.700}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Sunken" Color="{StaticResource Lumen.Primitive.Ink.900}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Overlay" Color="{StaticResource Lumen.Primitive.Ink.700}" />
+    <SolidColorBrush x:Key="Lumen.Surface.Scrim" Color="{StaticResource Lumen.Primitive.Scrim.Dark}" />
+
+    <!-- ===================== Text ===================== -->
+    <SolidColorBrush x:Key="Lumen.Text.Primary" Color="{StaticResource Lumen.Primitive.Ink.100}" />
+    <SolidColorBrush x:Key="Lumen.Text.Secondary" Color="{StaticResource Lumen.Primitive.Ink.300}" />
+    <SolidColorBrush x:Key="Lumen.Text.Disabled" Color="{StaticResource Lumen.Primitive.Ink.400}" />
+    <SolidColorBrush x:Key="Lumen.Text.OnAccent" Color="{StaticResource Lumen.Primitive.Ink.900}" />
+    <SolidColorBrush x:Key="Lumen.Text.OnInk" Color="{StaticResource Lumen.Primitive.Ink.900}" />
+
+    <!-- ===================== Borders ===================== -->
+    <SolidColorBrush x:Key="Lumen.Border.Subtle" Color="{StaticResource Lumen.Primitive.Ink.950}" />
+    <SolidColorBrush x:Key="Lumen.Border.Strong" Color="{StaticResource Lumen.Primitive.Ink.500}" />
+
+    <!-- ===================== Accent =====================
+         Lifted to Blue.400 for AA contrast on a dark canvas. -->
+    <SolidColorBrush x:Key="Lumen.Accent.Default" Color="{StaticResource Lumen.Primitive.Blue.400}" />
+    <SolidColorBrush x:Key="Lumen.Accent.Hover" Color="{StaticResource Lumen.Primitive.Blue.500}" />
+    <SolidColorBrush x:Key="Lumen.Accent.Muted" Color="{StaticResource Lumen.Primitive.PastelDark.Blue}" />
+    <SolidColorBrush x:Key="Lumen.Focus.Ring" Color="{StaticResource Lumen.Primitive.Blue.400}" />
+
+    <!-- ===================== Ink actions =====================
+         Inverted: on dark, the "ink" button becomes light so it still reads as the one
+         high-contrast element on the surface. -->
+    <SolidColorBrush x:Key="Lumen.Action.Default" Color="{StaticResource Lumen.Primitive.Ink.100}" />
+    <SolidColorBrush x:Key="Lumen.Action.Hover" Color="{StaticResource Lumen.Primitive.Bone.0}" />
+    <SolidColorBrush x:Key="Lumen.Action.Pressed" Color="{StaticResource Lumen.Primitive.Ink.200}" />
+    <SolidColorBrush x:Key="Lumen.Action.Disabled" Color="{StaticResource Lumen.Primitive.Ink.950}" />
+
+    <!-- ===================== Selection ===================== -->
+    <SolidColorBrush x:Key="Lumen.State.Selected.Border" Color="{StaticResource Lumen.Primitive.Blue.400}" />
+    <SolidColorBrush x:Key="Lumen.State.Selected.Fill" Color="{StaticResource Lumen.Primitive.PastelDark.Blue}" />
+    <SolidColorBrush x:Key="Lumen.State.Hover.Fill" Color="{StaticResource Lumen.Primitive.Ink.950}" />
+
+    <!-- ===================== Per-page extraction status ===================== -->
+    <SolidColorBrush x:Key="Lumen.Status.Queued" Color="{StaticResource Lumen.Primitive.PastelDark.Yellow}" />
+    <SolidColorBrush x:Key="Lumen.Status.Queued.Fg" Color="{StaticResource Lumen.Primitive.PastelDark.YellowText}" />
+    <SolidColorBrush x:Key="Lumen.Status.Running" Color="{StaticResource Lumen.Primitive.PastelDark.Blue}" />
+    <SolidColorBrush x:Key="Lumen.Status.Running.Fg" Color="{StaticResource Lumen.Primitive.PastelDark.BlueText}" />
+    <SolidColorBrush x:Key="Lumen.Status.Done" Color="{StaticResource Lumen.Primitive.PastelDark.Green}" />
+    <SolidColorBrush x:Key="Lumen.Status.Done.Fg" Color="{StaticResource Lumen.Primitive.PastelDark.GreenText}" />
+    <SolidColorBrush x:Key="Lumen.Status.Failed" Color="{StaticResource Lumen.Primitive.PastelDark.Red}" />
+    <SolidColorBrush x:Key="Lumen.Status.Failed.Fg" Color="{StaticResource Lumen.Primitive.PastelDark.RedText}" />
+
+    <!-- ===================== Danger ===================== -->
+    <SolidColorBrush x:Key="Lumen.Danger.Default" Color="{StaticResource Lumen.Primitive.Danger.400}" />
+
+    <!-- ===================== Skeleton ===================== -->
+    <SolidColorBrush x:Key="Lumen.Skeleton.Base" Color="{StaticResource Lumen.Primitive.Ink.950}" />
+    <SolidColorBrush x:Key="Lumen.Skeleton.Sheen" Color="{StaticResource Lumen.Primitive.Ink.500}" />
+
+</ResourceDictionary>
