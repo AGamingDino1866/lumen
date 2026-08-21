@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Lumen.App</RootNamespace>
+    <AssemblyName>Lumen</AssemblyName>
+    <ApplicationIcon>..\..\installer\assets\lumen.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- Publish profile. PublishTrimmed is deliberately absent: WPF does not trim
+       reliably and produces XamlParseExceptions that only surface after install.
+       The cost is installer size, which is stated in the README. -->
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lumen.Core\Lumen.Core.csproj" />
+  </ItemGroup>
+
+  <!-- Geist Sans and Geist Mono are bundled (SIL Open Font License) so the interface
+       renders identically on every machine with no network fetch and no system
+       font dependency. -->
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\**\*.ttf" />
+    <None Include="Assets\Fonts\OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

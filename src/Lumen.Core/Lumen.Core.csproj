@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- IMPORTANT: this project targets net8.0, NOT net8.0-windows, and must never
+       reference WPF. Every piece of testable logic lives here so the test suite can
+       run without a UI thread. PdfRenderService therefore returns PNG *bytes*; the
+       app layer is the only place that creates a BitmapSource and calls .Freeze(). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Lumen.Core</RootNamespace>
+    <AssemblyName>Lumen.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PDFtoImage" />
+    <PackageReference Include="bblanchon.PDFium.Win32" />
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  </ItemGroup>
+
+  <!-- The extraction prompt ships as an embedded resource so it cannot be
+       accidentally separated from the assembly, and so it is tunable in one place. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Gemini\extraction-prompt.txt" />
+  </ItemGroup>
+
+</Project>
