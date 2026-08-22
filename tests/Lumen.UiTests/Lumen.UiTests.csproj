@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>Lumen.UiTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <!-- 7.2.2 is the last Apache-2.0 release of FluentAssertions; see Directory.Packages.props. -->
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="FlaUI.UIA3" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Copied next to the test assembly so the suite can hand the published exe a real,
+       non-trivial multi-page PDF without depending on anything outside the repo. -->
+  <ItemGroup>
+    <None Include="..\Lumen.Core.Tests\Fixtures\sample.pdf" Link="Fixtures\sample.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

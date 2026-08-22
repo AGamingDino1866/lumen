@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ using Lumen.App.ViewModels;
 using Lumen.Core.Settings;
 using Wpf.Ui.Controls;
 using Button = System.Windows.Controls.Button;
+using Path = System.Windows.Shapes.Path;
 using TextBox = System.Windows.Controls.TextBox;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
@@ -32,17 +34,20 @@ public partial class MainWindow : FluentWindow
     private readonly ILogService _log;
 
     private bool _suppressSelectionSync;
+    private readonly string? _pendingFilePath;
 
     public MainWindow(
         MainViewModel viewModel,
         IBackdropService backdrop,
         IThemeService theme,
-        ILogService log)
+        ILogService log,
+        string? pendingFilePath = null)
     {
         _viewModel = viewModel;
         _backdrop = backdrop;
         _theme = theme;
         _log = log;
+        _pendingFilePath = pendingFilePath;
 
         InitializeComponent();
 
@@ -70,6 +75,14 @@ public partial class MainWindow : FluentWindow
         if (!_viewModel.HasApiKey)
         {
             ShowApiKeyGate();
+        }
+
+        // A PDF passed on the command line (a double-click via the "Open with Lumen" file
+        // association, or a path handed in by the FlaUI suite) opens only after the gate above
+        // has resolved, since extraction needs a key regardless of how the document arrived.
+        if (_pendingFilePath is { Length: > 0 } path && File.Exists(path))
+        {
+            _viewModel.LoadDocument(path);
         }
 
         PageGrid.Focus();

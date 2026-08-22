@@ -56,13 +56,13 @@
                           Width="15" Height="15"
                           VerticalAlignment="Center" />
                     <TextBlock Text="Lumen"
-                               Style="{StaticResource Lumen.Text.Small}"
+                               Style="{StaticResource Lumen.TextStyle.Small}"
                                Foreground="{DynamicResource Lumen.Text.Primary}"
                                FontWeight="SemiBold"
                                Margin="8,0,0,0"
                                VerticalAlignment="Center" />
                     <TextBlock Text="{Binding DocumentSummary}"
-                               Style="{StaticResource Lumen.Text.Small}"
+                               Style="{StaticResource Lumen.TextStyle.Small}"
                                Margin="14,0,0,0"
                                VerticalAlignment="Center" />
                 </StackPanel>
@@ -95,7 +95,7 @@
 
                 <!-- Page-range entry. Errors render inline beneath, never as a message box. -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="Pages" Style="{StaticResource Lumen.Text.Small}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBlock Text="Pages" Style="{StaticResource Lumen.TextStyle.Small}" VerticalAlignment="Center" Margin="0,0,8,0" />
                     <StackPanel>
                         <TextBox x:Name="PageRangeBox"
                                  Style="{StaticResource Lumen.TextBox}"
@@ -108,7 +108,7 @@
                             </TextBox.InputBindings>
                         </TextBox>
                         <TextBlock Text="{Binding PageRangeError}"
-                                   Style="{StaticResource Lumen.Text.Small}"
+                                   Style="{StaticResource Lumen.TextStyle.Small}"
                                    Foreground="{DynamicResource Lumen.Danger.Default}"
                                    MaxWidth="240"
                                    TextWrapping="Wrap"
@@ -159,6 +159,7 @@
                             Click="OnExportClick"
                             IsEnabled="{Binding HasResults}"
                             ToolTip="Export to Word, Markdown, or plain text"
+                            AutomationProperties.Name="Export"
                             Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <Path Style="{StaticResource Lumen.IconPath}" Data="{StaticResource Lumen.Icon.Export}" Width="15" Height="15" />
@@ -204,12 +205,12 @@
                               Width="34" Height="34" />
                     </Border>
 
-                    <TextBlock Style="{StaticResource Lumen.Text.Display}"
+                    <TextBlock Style="{StaticResource Lumen.TextStyle.Display}"
                                Text="Drop a PDF to begin"
                                HorizontalAlignment="Center"
                                Margin="0,24,0,0" />
 
-                    <TextBlock Style="{StaticResource Lumen.Text.Secondary}"
+                    <TextBlock Style="{StaticResource Lumen.TextStyle.Secondary}"
                                Text="Choose the pages you care about, and Lumen transcribes just those with Gemini."
                                TextAlignment="Center"
                                Margin="0,8,0,24" />
@@ -226,7 +227,7 @@
                         </StackPanel>
                     </Button>
 
-                    <TextBlock Style="{StaticResource Lumen.Text.Small}"
+                    <TextBlock Style="{StaticResource Lumen.TextStyle.Small}"
                                Text="or press Ctrl+O"
                                HorizontalAlignment="Center"
                                Margin="0,10,0,0" />
@@ -235,7 +236,7 @@
                     <StackPanel Margin="0,36,0,0"
                                 Visibility="{Binding RecentFiles.Count, Converter={StaticResource NotEmptyToVisibility}}">
                         <Grid Margin="0,0,0,8">
-                            <TextBlock Text="RECENT" Style="{StaticResource Lumen.Text.Label}" />
+                            <TextBlock Text="RECENT" Style="{StaticResource Lumen.TextStyle.Label}" />
                             <Button Style="{StaticResource Lumen.Button.Icon}"
                                     HorizontalAlignment="Right"
                                     Command="{Binding ClearRecentFilesCommand}"
@@ -256,8 +257,8 @@
                                             CommandParameter="{Binding}">
                                         <StackPanel Orientation="Horizontal">
                                             <Path Style="{StaticResource Lumen.IconPath}" Data="{StaticResource Lumen.Icon.Page}" Width="14" Height="14" />
-                                            <TextBlock Text="{Binding FileName}" Style="{StaticResource Lumen.Text.Body}" Margin="8,0,0,0" />
-                                            <TextBlock Text="{Binding Directory}" Style="{StaticResource Lumen.Text.Small}" Margin="10,0,0,0" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding FileName}" Style="{StaticResource Lumen.TextStyle.Body}" Margin="8,0,0,0" />
+                                            <TextBlock Text="{Binding Directory}" Style="{StaticResource Lumen.TextStyle.Small}" Margin="10,0,0,0" VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Button>
                                 </DataTemplate>
@@ -272,7 +273,7 @@
                             Background="{DynamicResource Lumen.Status.Failed}"
                             Visibility="{Binding StatusMessage, Converter={StaticResource NotEmptyToVisibility}}">
                         <TextBlock Text="{Binding StatusMessage}"
-                                   Style="{StaticResource Lumen.Text.Small}"
+                                   Style="{StaticResource Lumen.TextStyle.Small}"
                                    Foreground="{DynamicResource Lumen.Status.Failed.Fg}"
                                    TextWrapping="Wrap" />
                     </Border>
@@ -361,7 +362,7 @@
                                     <!-- Per-page render failure. The grid survives one bad page. -->
                                     <TextBlock Grid.Row="0"
                                                Text="Could not render"
-                                               Style="{StaticResource Lumen.Text.Small}"
+                                               Style="{StaticResource Lumen.TextStyle.Small}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
                                                Visibility="{Binding IsRenderFailed, Converter={StaticResource BoolToVisibility}}" />
@@ -403,7 +404,7 @@
 
                                     <Border Grid.Row="1" Padding="8,5">
                                         <TextBlock Text="{Binding PageNumber, StringFormat='Page {0}'}"
-                                                   Style="{StaticResource Lumen.Text.Label}"
+                                                   Style="{StaticResource Lumen.TextStyle.Label}"
                                                    HorizontalAlignment="Center" />
                                     </Border>
                                 </Grid>
@@ -504,7 +505,7 @@
                                              ToolTip="Enter jumps to the next match, Shift+Enter to the previous"
                                              AutomationProperties.Name="Find in results" />
                                     <TextBlock Text="Find in results (Ctrl+F)"
-                                               Style="{StaticResource Lumen.Text.Small}"
+                                               Style="{StaticResource Lumen.TextStyle.Small}"
                                                Margin="12,0,0,0"
                                                VerticalAlignment="Center"
                                                IsHitTestVisible="False"
@@ -531,11 +532,11 @@
                                   Stroke="{DynamicResource Lumen.Text.Disabled}"
                                   Width="30" Height="30"
                                   HorizontalAlignment="Center" />
-                            <TextBlock Style="{StaticResource Lumen.Text.Subtitle}"
+                            <TextBlock Style="{StaticResource Lumen.TextStyle.Subtitle}"
                                        Text="Nothing extracted yet"
                                        HorizontalAlignment="Center"
                                        Margin="0,14,0,0" />
-                            <TextBlock Style="{StaticResource Lumen.Text.Secondary}"
+                            <TextBlock Style="{StaticResource Lumen.TextStyle.Secondary}"
                                        Text="Select the pages you want on the left, then press Extract Text."
                                        TextAlignment="Center"
                                        Margin="0,6,0,0" />
@@ -580,7 +581,7 @@
 
                                                 <TextBlock Grid.Column="0"
                                                            Text="{Binding PageNumber, StringFormat='PAGE {0}'}"
-                                                           Style="{StaticResource Lumen.Text.Label}"
+                                                           Style="{StaticResource Lumen.TextStyle.Label}"
                                                            VerticalAlignment="Center" />
 
                                                 <Border Grid.Column="1"
@@ -635,12 +636,12 @@
                                                      AutomationProperties.Name="{Binding AutomationName}" />
 
                                             <TextBlock Text="This page contained no readable text."
-                                                       Style="{StaticResource Lumen.Text.Small}"
+                                                       Style="{StaticResource Lumen.TextStyle.Small}"
                                                        FontStyle="Italic"
                                                        Visibility="{Binding IsBlank, Converter={StaticResource BoolToVisibility}}" />
 
                                             <TextBlock Text="{Binding ErrorMessage}"
-                                                       Style="{StaticResource Lumen.Text.Small}"
+                                                       Style="{StaticResource Lumen.TextStyle.Small}"
                                                        Foreground="{DynamicResource Lumen.Status.Failed.Fg}"
                                                        TextWrapping="Wrap"
                                                        Visibility="{Binding IsFailed, Converter={StaticResource BoolToVisibility}}" />
@@ -688,12 +689,12 @@
 
                 <TextBlock Grid.Column="0"
                            Text="{Binding SelectionSummary}"
-                           Style="{StaticResource Lumen.Text.Body}"
+                           Style="{StaticResource Lumen.TextStyle.Body}"
                            VerticalAlignment="Center" />
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20,0">
                     <TextBlock Text="{Binding ProgressText}"
-                               Style="{StaticResource Lumen.Text.Small}"
+                               Style="{StaticResource Lumen.TextStyle.Small}"
                                Visibility="{Binding IsExtracting, Converter={StaticResource BoolToVisibility}}" />
                     <ProgressBar Height="3"
                                  Margin="0,4,0,0"
@@ -704,7 +705,7 @@
                                  BorderThickness="0"
                                  Visibility="{Binding IsExtracting, Converter={StaticResource BoolToVisibility}}" />
                     <TextBlock Text="{Binding StatusMessage}"
-                               Style="{StaticResource Lumen.Text.Small}"
+                               Style="{StaticResource Lumen.TextStyle.Small}"
                                TextWrapping="Wrap"
                                Visibility="{Binding StatusMessage, Converter={StaticResource NotEmptyToVisibility}}" />
                 </StackPanel>
@@ -766,7 +767,7 @@
                           Stroke="{DynamicResource Lumen.Accent.Default}"
                           Width="34" Height="34"
                           HorizontalAlignment="Center" />
-                    <TextBlock Style="{StaticResource Lumen.Text.Subtitle}"
+                    <TextBlock Style="{StaticResource Lumen.TextStyle.Subtitle}"
                                Text="Drop your PDF here"
                                HorizontalAlignment="Center"
                                Margin="0,14,0,0" />

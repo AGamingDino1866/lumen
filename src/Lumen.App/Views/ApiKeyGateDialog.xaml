@@ -19,10 +19,10 @@
     <Border Padding="28">
         <StackPanel>
 
-            <TextBlock Style="{StaticResource Lumen.Text.Title}"
+            <TextBlock Style="{StaticResource Lumen.TextStyle.Title}"
                        Text="Add your Gemini API key" />
 
-            <TextBlock Style="{StaticResource Lumen.Text.Secondary}"
+            <TextBlock Style="{StaticResource Lumen.TextStyle.Secondary}"
                        Margin="0,8,0,0"
                        Text="Lumen sends the pages you choose to Google's Gemini API to transcribe them. The key stays on this machine, encrypted, and is never sent anywhere else." />
 
@@ -73,7 +73,7 @@
 
             <!-- Inline validation error, next to the field it belongs to. -->
             <TextBlock x:Name="ErrorText"
-                       Style="{StaticResource Lumen.Text.Small}"
+                       Style="{StaticResource Lumen.TextStyle.Small}"
                        Foreground="{DynamicResource Lumen.Danger.Default}"
                        TextWrapping="Wrap"
                        Margin="2,8,0,0"

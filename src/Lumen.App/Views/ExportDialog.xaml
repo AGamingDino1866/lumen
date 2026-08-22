@@ -17,9 +17,9 @@
     -->
     <Border Padding="24">
         <StackPanel>
-            <TextBlock Style="{StaticResource Lumen.Text.Title}" Text="Export extracted text" />
+            <TextBlock Style="{StaticResource Lumen.TextStyle.Title}" Text="Export extracted text" />
 
-            <TextBlock Style="{StaticResource Lumen.Text.Secondary}"
+            <TextBlock Style="{StaticResource Lumen.TextStyle.Secondary}"
                        Text="Choose how the pages you extracted should be laid out, then pick where to save."
                        TextWrapping="Wrap"
                        Margin="0,6,0,18" />

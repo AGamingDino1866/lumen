@@ -53,7 +53,7 @@
     <!-- ===================== Typography =====================
          Tracking is size-specific. Hierarchy comes from weight, size, and leading as a set,
          never from size alone. -->
-    <Style x:Key="Lumen.Text.Display" TargetType="TextBlock">
+    <Style x:Key="Lumen.TextStyle.Display" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
         <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Display}" />
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -62,21 +62,21 @@
         <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
     </Style>
 
-    <Style x:Key="Lumen.Text.Title" TargetType="TextBlock">
+    <Style x:Key="Lumen.TextStyle.Title" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
         <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Title}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
     </Style>
 
-    <Style x:Key="Lumen.Text.Subtitle" TargetType="TextBlock">
+    <Style x:Key="Lumen.TextStyle.Subtitle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
         <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Subtitle}" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
     </Style>
 
-    <Style x:Key="Lumen.Text.Body" TargetType="TextBlock">
+    <Style x:Key="Lumen.TextStyle.Body" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
         <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Body}" />
         <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Primary}" />
@@ -84,25 +84,25 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
-    <Style x:Key="Lumen.Text.Secondary" TargetType="TextBlock" BasedOn="{StaticResource Lumen.Text.Body}">
+    <Style x:Key="Lumen.TextStyle.Secondary" TargetType="TextBlock" BasedOn="{StaticResource Lumen.TextStyle.Body}">
         <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />
     </Style>
 
-    <Style x:Key="Lumen.Text.Small" TargetType="TextBlock">
+    <Style x:Key="Lumen.TextStyle.Small" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Sans}" />
         <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Small}" />
         <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />
     </Style>
 
     <!-- Small-caps label: used for the "Page 12" divider in the merged results view. -->
-    <Style x:Key="Lumen.Text.Label" TargetType="TextBlock">
+    <Style x:Key="Lumen.TextStyle.Label" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Mono}" />
         <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Label}" />
         <Setter Property="FontWeight" Value="Medium" />
         <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />
     </Style>
 
-    <Style x:Key="Lumen.Text.Mono" TargetType="TextBlock">
+    <Style x:Key="Lumen.TextStyle.Mono" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource Lumen.Primitive.Font.Mono}" />
         <Setter Property="FontSize" Value="{DynamicResource Lumen.Primitive.Type.Size.Small}" />
         <Setter Property="Foreground" Value="{DynamicResource Lumen.Text.Secondary}" />

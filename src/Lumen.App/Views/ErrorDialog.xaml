@@ -24,13 +24,13 @@
                       Stroke="{DynamicResource Lumen.Danger.Default}"
                       Width="22" Height="22"
                       VerticalAlignment="Center" />
-                <TextBlock Style="{StaticResource Lumen.Text.Title}"
+                <TextBlock Style="{StaticResource Lumen.TextStyle.Title}"
                            Text="Something went wrong"
                            Margin="10,0,0,0"
                            VerticalAlignment="Center" />
             </StackPanel>
 
-            <TextBlock Style="{StaticResource Lumen.Text.Body}"
+            <TextBlock Style="{StaticResource Lumen.TextStyle.Body}"
                        Text="Lumen hit an unexpected problem, but it is still running and your open document and extracted text are intact."
                        Margin="0,0,0,12" />
 
@@ -41,12 +41,12 @@
                     Padding="12"
                     Margin="0,0,0,12">
                 <TextBlock x:Name="DetailText"
-                           Style="{StaticResource Lumen.Text.Mono}"
+                           Style="{StaticResource Lumen.TextStyle.Mono}"
                            TextWrapping="Wrap"
                            MaxHeight="120" />
             </Border>
 
-            <TextBlock Style="{StaticResource Lumen.Text.Small}"
+            <TextBlock Style="{StaticResource Lumen.TextStyle.Small}"
                        Margin="0,0,0,18">
                 <Run Text="A full record was written to the log folder." />
             </TextBlock>

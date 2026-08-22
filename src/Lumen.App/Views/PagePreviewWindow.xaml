@@ -40,7 +40,7 @@
 
                 <TextBlock x:Name="LoadingText"
                            Text="Rendering…"
-                           Style="{StaticResource Lumen.Text.Secondary}"
+                           Style="{StaticResource Lumen.TextStyle.Secondary}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
             </Grid>
@@ -61,7 +61,7 @@
                     </Button>
 
                     <TextBlock x:Name="PageLabel"
-                               Style="{StaticResource Lumen.Text.Body}"
+                               Style="{StaticResource Lumen.TextStyle.Body}"
                                VerticalAlignment="Center"
                                MinWidth="140"
                                TextAlignment="Center" />
@@ -83,7 +83,7 @@
                     </Button>
 
                     <TextBlock x:Name="ZoomLabel"
-                               Style="{StaticResource Lumen.Text.Mono}"
+                               Style="{StaticResource Lumen.TextStyle.Mono}"
                                VerticalAlignment="Center"
                                MinWidth="52"
                                TextAlignment="Center" />

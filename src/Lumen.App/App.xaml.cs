@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Threading;
@@ -20,18 +21,28 @@ public partial class App : Application
 {
     /// <summary>
     /// One HttpClient for the lifetime of the process. Creating one per request exhausts
-    /// sockets under a multi-page run, and disposing one per request is worse.
+    /// sockets under a multi-page run, and disposing one per request is worse. Built in
+    /// <see cref="OnStartup"/> rather than at field-initialization time because its handler
+    /// depends on <c>LUMEN_UI_TEST</c>, which must be read after the process environment is
+    /// fully set up.
     /// </summary>
-    private static readonly HttpClient Http = new()
-    {
-        Timeout = TimeSpan.FromMinutes(2)
-    };
+    private static HttpClient Http = null!;
 
     private ILogService _log = null!;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        if (TryRunNativeSelfTest(e.Args, out var exitCode))
+        {
+            Shutdown(exitCode);
+            return;
+        }
+
+        Http = Environment.GetEnvironmentVariable("LUMEN_UI_TEST") == "1"
+            ? new HttpClient(new StubGeminiHandler()) { Timeout = TimeSpan.FromMinutes(2) }
+            : new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
 
         AppPaths.EnsureCreated();
 
@@ -69,7 +80,12 @@ public partial class App : Application
             motionService,
             _log);
 
-        var window = new MainWindow(viewModel, new BackdropService(_log), themeService, _log);
+        // A bare, non-flag argument is a PDF path: the "Open with Lumen" file association
+        // invokes the exe as `Lumen.exe "%1"`, and the FlaUI suite uses the same mechanism to
+        // open its fixture without automating the native file-open dialog.
+        var pendingFilePath = e.Args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
+
+        var window = new MainWindow(viewModel, new BackdropService(_log), themeService, _log, pendingFilePath);
 
         MainWindow = window;
         window.Show();
@@ -129,10 +145,62 @@ public partial class App : Application
         }
     }
 
+    /// <summary>
+    /// A headless smoke test invoked only by build.ps1's native-DLL gate. Publishing as a
+    /// self-contained single file changes how PDFium's and Skia's native libraries are located
+    /// and loaded, and neither <c>dotnet run</c> nor a file-existence check exercises that path —
+    /// the only reliable proof is launching the actual published exe and rendering a real page
+    /// through it. The exit code is the pass/fail signal PowerShell reads; the result file exists
+    /// only so a human can see why it failed without re-running under a debugger.
+    /// </summary>
+    private static bool TryRunNativeSelfTest(string[] args, out int exitCode)
+    {
+        exitCode = 0;
+
+        var index = Array.IndexOf(args, "--self-test-render");
+        if (index < 0 || index + 1 >= args.Length)
+        {
+            return false;
+        }
+
+        var resultPath = Path.Combine(AppContext.BaseDirectory, "self-test-result.txt");
+
+        try
+        {
+            var renderer = new PdfRenderService();
+            var info = renderer.Open(args[index + 1]);
+            var png = renderer.RenderPagePng(args[index + 1], pageIndex: 0);
+
+            var isPng = png is { Length: > 8 } &&
+                        png[0] == 0x89 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47;
+
+            if (isPng)
+            {
+                File.WriteAllText(resultPath, $"OK pages={info.PageCount} bytes={png.Length}");
+                exitCode = 0;
+            }
+            else
+            {
+                File.WriteAllText(resultPath, "FAIL rendered output was not a valid PNG");
+                exitCode = 1;
+            }
+        }
+        catch (Exception ex)
+        {
+            File.WriteAllText(resultPath, $"FAIL {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}");
+            exitCode = 1;
+        }
+
+        return true;
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         _log?.Info("Lumen exited.");
-        Http.Dispose();
+
+        // Null when exiting via the --self-test-render path, which returns before Http is built.
+        Http?.Dispose();
+
         base.OnExit(e);
     }
 }

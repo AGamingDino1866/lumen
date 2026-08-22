@@ -12,10 +12,16 @@ namespace Lumen.App.Services;
 /// </remarks>
 public static class AppPaths
 {
-    /// <summary><c>%APPDATA%\Lumen</c>.</summary>
-    public static string AppData { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "Lumen");
+    /// <summary>
+    /// <c>%APPDATA%\Lumen</c>, or an isolated directory when <c>LUMEN_APPDATA_OVERRIDE</c> is
+    /// set. The override exists solely so the FlaUI suite (<c>tests/Lumen.UiTests</c>) can run
+    /// against a throwaway settings directory instead of a real user's saved API key and recent
+    /// files — it has no effect unless that variable is explicitly set.
+    /// </summary>
+    public static string AppData { get; } =
+        Environment.GetEnvironmentVariable("LUMEN_APPDATA_OVERRIDE") is { Length: > 0 } overridePath
+            ? overridePath
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Lumen");
 
     public static string Logs => Path.Combine(AppData, "logs");
 
