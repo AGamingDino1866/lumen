@@ -4,6 +4,11 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- Enabled only for System.Windows.Forms.Screen, which is the supported way to enumerate
+         every connected monitor's working area. That is what lets a saved window position be
+         validated against the displays currently attached, rather than restoring off-screen
+         onto a monitor that has been unplugged. -->
+    <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>Lumen.App</RootNamespace>
     <AssemblyName>Lumen</AssemblyName>
     <ApplicationIcon>..\..\installer\assets\lumen.ico</ApplicationIcon>
@@ -24,6 +29,15 @@
   <ItemGroup>
     <PackageReference Include="WPF-UI" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <!-- UseWindowsForms is on solely for System.Windows.Forms.Screen (multi-monitor enumeration
+       for window-placement validation). Its SDK-injected global using otherwise collides with
+       half of System.Windows on every ambiguous type (Application, MessageBox, Clipboard,
+       DataFormats, ...), so it is removed here; the one call site aliases Screen explicitly. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>

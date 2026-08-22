@@ -1,0 +1,98 @@
+<Window x:Class="Lumen.App.Views.ApiKeyGateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Connect Lumen to Gemini"
+        Width="480"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource Lumen.Surface.Canvas}"
+        FontFamily="{DynamicResource Lumen.Primitive.Font.Sans}">
+
+    <!--
+        A blocking gate, not a nag. The application genuinely cannot do the one thing it exists
+        for without a key, so this is a hard prerequisite rather than a deferrable choice. It
+        cannot be dismissed by clicking away, but it explains itself in one sentence, links
+        straight to where the key comes from, and never scolds.
+    -->
+    <Border Padding="28">
+        <StackPanel>
+
+            <TextBlock Style="{StaticResource Lumen.Text.Title}"
+                       Text="Add your Gemini API key" />
+
+            <TextBlock Style="{StaticResource Lumen.Text.Secondary}"
+                       Margin="0,8,0,0"
+                       Text="Lumen sends the pages you choose to Google's Gemini API to transcribe them. The key stays on this machine, encrypted, and is never sent anywhere else." />
+
+            <TextBlock Margin="0,10,0,18">
+                <Hyperlink Click="OnOpenKeyPage" Foreground="{DynamicResource Lumen.Accent.Default}">
+                    <Run Text="Get a free key from Google AI Studio" />
+                </Hyperlink>
+            </TextBlock>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- PasswordBox by default so the key is not shoulder-surfed, with a toggle for
+                     the user who needs to check what they pasted. -->
+                <PasswordBox x:Name="KeyBox"
+                             Grid.Column="0"
+                             Padding="10,8"
+                             FontFamily="{DynamicResource Lumen.Primitive.Font.Mono}"
+                             Background="{DynamicResource Lumen.Surface.Raised}"
+                             Foreground="{DynamicResource Lumen.Text.Primary}"
+                             BorderBrush="{DynamicResource Lumen.Border.Subtle}"
+                             BorderThickness="1"
+                             PasswordChanged="OnKeyChanged"
+                             AutomationProperties.Name="Gemini API key" />
+
+                <TextBox x:Name="KeyPlainBox"
+                         Grid.Column="0"
+                         Style="{StaticResource Lumen.TextBox}"
+                         Visibility="Collapsed"
+                         TextChanged="OnPlainKeyChanged"
+                         AutomationProperties.Name="Gemini API key, visible" />
+
+                <Button Grid.Column="1"
+                        x:Name="RevealButton"
+                        Style="{StaticResource Lumen.Button.Icon}"
+                        Margin="6,0,0,0"
+                        Click="OnToggleReveal"
+                        ToolTip="Show or hide the key"
+                        AutomationProperties.Name="Show or hide the key">
+                    <Path x:Name="RevealIcon"
+                          Style="{StaticResource Lumen.IconPath}"
+                          Data="{StaticResource Lumen.Icon.Eye}" />
+                </Button>
+            </Grid>
+
+            <!-- Inline validation error, next to the field it belongs to. -->
+            <TextBlock x:Name="ErrorText"
+                       Style="{StaticResource Lumen.Text.Small}"
+                       Foreground="{DynamicResource Lumen.Danger.Default}"
+                       TextWrapping="Wrap"
+                       Margin="2,8,0,0"
+                       Visibility="Collapsed" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <Button x:Name="CancelButton"
+                        Style="{StaticResource Lumen.Button.Secondary}"
+                        Content="Not now"
+                        Margin="0,0,8,0"
+                        Click="OnCancel" />
+                <Button x:Name="SaveButton"
+                        Style="{StaticResource Lumen.Button.Primary}"
+                        Content="Save and continue"
+                        IsDefault="True"
+                        IsEnabled="False"
+                        Click="OnSave" />
+            </StackPanel>
+
+        </StackPanel>
+    </Border>
+</Window>

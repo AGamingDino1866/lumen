@@ -1,0 +1,51 @@
+<Window x:Class="Lumen.App.Views.ExportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Export options"
+        Width="380"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource Lumen.Surface.Canvas}"
+        FontFamily="{DynamicResource Lumen.Primitive.Font.Sans}">
+
+    <!--
+        Shown before the Save dialog so the two export options are checkboxes the user actually
+        sees and can change per export, rather than being silently fixed from Settings every time.
+        Choosing here also updates Settings, so the next export remembers this choice.
+    -->
+    <Border Padding="24">
+        <StackPanel>
+            <TextBlock Style="{StaticResource Lumen.Text.Title}" Text="Export extracted text" />
+
+            <TextBlock Style="{StaticResource Lumen.Text.Secondary}"
+                       Text="Choose how the pages you extracted should be laid out, then pick where to save."
+                       TextWrapping="Wrap"
+                       Margin="0,6,0,18" />
+
+            <CheckBox x:Name="PageBreaksCheck"
+                      Content="Page break between pages"
+                      Foreground="{DynamicResource Lumen.Text.Primary}"
+                      Margin="0,0,0,10"
+                      AutomationProperties.Name="Page break between pages" />
+
+            <CheckBox x:Name="PageHeadingsCheck"
+                      Content="Heading per page (&quot;Page 12&quot;)"
+                      Foreground="{DynamicResource Lumen.Text.Primary}"
+                      AutomationProperties.Name="Heading per page" />
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                <Button Style="{StaticResource Lumen.Button.Secondary}"
+                        Content="Cancel"
+                        IsCancel="True"
+                        Margin="0,0,8,0"
+                        Click="OnCancel" />
+                <Button Style="{StaticResource Lumen.Button.Primary}"
+                        Content="Continue"
+                        IsDefault="True"
+                        Click="OnContinue" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

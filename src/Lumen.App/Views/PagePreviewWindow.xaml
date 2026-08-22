@@ -1,0 +1,101 @@
+<Window x:Class="Lumen.App.Views.PagePreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Page preview"
+        Width="900" Height="820"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Lumen.Surface.Canvas}"
+        FontFamily="{DynamicResource Lumen.Primitive.Font.Sans}">
+
+    <Window.InputBindings>
+        <KeyBinding Key="Left" Command="{x:Static NavigationCommands.PreviousPage}" />
+        <KeyBinding Key="Right" Command="{x:Static NavigationCommands.NextPage}" />
+        <KeyBinding Key="Escape" Command="Close" />
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Full-size render. ScrollViewer plus a ScaleTransform gives pan and zoom without a
+             third-party viewer control. -->
+        <ScrollViewer x:Name="Scroller"
+                      Grid.Row="0"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Background="{DynamicResource Lumen.Surface.Sunken}"
+                      PreviewMouseWheel="OnPreviewMouseWheel">
+            <Grid>
+                <Image x:Name="PageImage"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Margin="24"
+                       RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <ScaleTransform x:Name="Zoom" ScaleX="1" ScaleY="1" />
+                    </Image.RenderTransform>
+                </Image>
+
+                <TextBlock x:Name="LoadingText"
+                           Text="Rendering…"
+                           Style="{StaticResource Lumen.Text.Secondary}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Grid>
+        </ScrollViewer>
+
+        <Border Grid.Row="1"
+                Padding="16,10"
+                Background="{DynamicResource Lumen.Surface.Raised}"
+                BorderBrush="{DynamicResource Lumen.Border.Subtle}"
+                BorderThickness="0,1,0,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Style="{StaticResource Lumen.Button.Icon}"
+                            Click="OnPrevious"
+                            ToolTip="Previous page (Left arrow)"
+                            AutomationProperties.Name="Previous page">
+                        <Path Style="{StaticResource Lumen.IconPath}" Data="{StaticResource Lumen.Icon.ChevronLeft}" />
+                    </Button>
+
+                    <TextBlock x:Name="PageLabel"
+                               Style="{StaticResource Lumen.Text.Body}"
+                               VerticalAlignment="Center"
+                               MinWidth="140"
+                               TextAlignment="Center" />
+
+                    <Button Style="{StaticResource Lumen.Button.Icon}"
+                            Click="OnNext"
+                            ToolTip="Next page (Right arrow)"
+                            AutomationProperties.Name="Next page">
+                        <Path Style="{StaticResource Lumen.IconPath}" Data="{StaticResource Lumen.Icon.ChevronRight}" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource Lumen.Button.Icon}"
+                            Click="OnZoomOut"
+                            ToolTip="Zoom out"
+                            AutomationProperties.Name="Zoom out">
+                        <Path Style="{StaticResource Lumen.IconPath}" Data="{StaticResource Lumen.Icon.Minus}" />
+                    </Button>
+
+                    <TextBlock x:Name="ZoomLabel"
+                               Style="{StaticResource Lumen.Text.Mono}"
+                               VerticalAlignment="Center"
+                               MinWidth="52"
+                               TextAlignment="Center" />
+
+                    <Button Style="{StaticResource Lumen.Button.Icon}"
+                            Click="OnZoomIn"
+                            ToolTip="Zoom in"
+                            AutomationProperties.Name="Zoom in">
+                        <Path Style="{StaticResource Lumen.IconPath}" Data="{StaticResource Lumen.Icon.Plus}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
