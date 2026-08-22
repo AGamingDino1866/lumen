@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>Lumen.ScreenshotTool</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Not part of the shipped product or the test suite: a one-off, re-runnable utility that
+       drives the real built app through UI Automation to capture the screenshots required by
+       the definition of done. Run with: dotnet run, from this directory. -->
+  <ItemGroup>
+    <PackageReference Include="FlaUI.UIA3" />
+  </ItemGroup>
+
+</Project>
