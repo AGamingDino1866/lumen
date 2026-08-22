@@ -136,11 +136,17 @@ public sealed class GeminiClient : IDisposable
     /// Checks a key by making one cheap request. Used before persisting a key, so an invalid one
     /// is reported inline at entry rather than as a failure on every page of the first run.
     /// </summary>
-    public async Task<bool> ValidateKeyAsync(string apiKey, string model, CancellationToken cancellationToken)
+    /// <remarks>
+    /// Returns the full <see cref="PageExtractionResult"/>, not a bare bool, so the caller can
+    /// show the real reason a key was rejected — invalid key, rate limited, no access to this
+    /// model, or a network failure all read identically as "false" otherwise, which leaves the
+    /// user unable to tell a bad key from a transient problem.
+    /// </remarks>
+    public async Task<PageExtractionResult> ValidateKeyAsync(string apiKey, string model, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            return false;
+            return PageExtractionResult.Failed("Enter a key first.");
         }
 
         // A 1x1 transparent PNG: the smallest payload that still exercises the real
@@ -148,21 +154,8 @@ public sealed class GeminiClient : IDisposable
         var probe = Convert.FromBase64String(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
 
-        try
-        {
-            var result = await ExtractAsync(probe, model, apiKey, "Reply with the single word OK.", cancellationToken)
-                .ConfigureAwait(false);
-
-            return result.Success;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        return await ExtractAsync(probe, model, apiKey, "Reply with the single word OK.", cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private async Task<HttpResponseMessage> SendAsync(

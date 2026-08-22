@@ -225,7 +225,7 @@ public class GeminiClientTests
     {
         (await Client(new StubHandler(HttpStatusCode.OK, SuccessJson("ok")))
             .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
-            .Should().BeTrue();
+            .Success.Should().BeTrue();
     }
 
     [Fact]
@@ -233,6 +233,22 @@ public class GeminiClientTests
     {
         (await Client(new StubHandler(HttpStatusCode.Forbidden, "{}"))
             .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
-            .Should().BeFalse();
+            .Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Validate_key_surfaces_the_real_rejection_reason()
+    {
+        (await Client(new StubHandler(HttpStatusCode.Forbidden, "{}"))
+            .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
+            .ErrorMessage.Should().Be("That API key was rejected. Check or replace your key in Settings.");
+    }
+
+    [Fact]
+    public async Task Validate_key_surfaces_rate_limiting_distinctly_from_a_bad_key()
+    {
+        (await Client(new StubHandler(HttpStatusCode.TooManyRequests, "{}"))
+            .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
+            .ErrorMessage.Should().Be("Gemini is rate limiting this key. Wait a moment and retry the remaining pages.");
     }
 }

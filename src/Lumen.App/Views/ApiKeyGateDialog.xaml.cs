@@ -89,15 +89,15 @@ public partial class ApiKeyGateDialog : Window
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
             // Validate before persisting. A key that does not work should never reach disk.
-            var valid = await _viewModel.TrySetApiKeyAsync(key, cts.Token);
+            var result = await _viewModel.TrySetApiKeyAsync(key, cts.Token);
 
-            if (valid)
+            if (result.Success)
             {
                 DialogResult = true;
                 return;
             }
 
-            ShowError("That key was not accepted. Check that you copied all of it and that the Generative Language API is enabled.");
+            ShowError(result.ErrorMessage ?? "That key was not accepted. Check that you copied all of it and that the Generative Language API is enabled.");
         }
         catch (OperationCanceledException)
         {

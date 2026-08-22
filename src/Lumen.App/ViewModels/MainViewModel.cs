@@ -170,20 +170,24 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ? $"{_apiKey[..4]}{new string('•', 12)}{_apiKey[^4..]}"
         : "Not set";
 
-    /// <summary>Validates a key against the API, and persists it only if the call succeeds.</summary>
-    public async Task<bool> TrySetApiKeyAsync(string candidate, CancellationToken cancellationToken)
+    /// <summary>
+    /// Validates a key against the API, and persists it only if the call succeeds. The result
+    /// carries the real reason on failure (invalid key, rate limited, network problem, ...) so
+    /// the gate can show something more useful than a single generic "not accepted" message.
+    /// </summary>
+    public async Task<PageExtractionResult> TrySetApiKeyAsync(string candidate, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(candidate))
         {
-            return false;
+            return PageExtractionResult.Failed("Enter a key first.");
         }
 
-        var valid = await _gemini.ValidateKeyAsync(candidate.Trim(), SelectedModel, cancellationToken)
+        var result = await _gemini.ValidateKeyAsync(candidate.Trim(), SelectedModel, cancellationToken)
             .ConfigureAwait(true);
 
-        if (!valid)
+        if (!result.Success)
         {
-            return false;
+            return result;
         }
 
         _apiKey = candidate.Trim();
@@ -192,7 +196,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         OnPropertyChanged(nameof(HasApiKey));
         OnPropertyChanged(nameof(MaskedApiKey));
-        return true;
+        return result;
     }
 
     public void ClearApiKey()
