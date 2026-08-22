@@ -345,6 +345,7 @@
                                     BorderThickness="{StaticResource Lumen.PageTile.BorderThickness}"
                                     CornerRadius="{StaticResource Lumen.PageTile.Radius}"
                                     SnapsToDevicePixels="True"
+                                    Loaded="OnTileLoaded"
                                     AutomationProperties.Name="{Binding AutomationName}">
                                 <Grid>
                                     <Grid.RowDefinitions>

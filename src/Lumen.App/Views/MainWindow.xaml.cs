@@ -254,6 +254,41 @@ public partial class MainWindow : FluentWindow
         DropOverlay.BeginAnimation(OpacityProperty, fade);
     }
 
+    // ===================== Thumbnails =====================
+
+    /// <summary>
+    /// Kicks off the thumbnail render for a tile as soon as its container is realized.
+    /// </summary>
+    /// <remarks>
+    /// The view model exposes <c>RequestThumbnail</c>, but nothing was ever calling it -- every
+    /// page tile stayed on its skeleton placeholder forever, since the render was never actually
+    /// requested. <c>Loaded</c> on a virtualized container fires both the first time a tile
+    /// scrolls into view and every time recycling reuses the container for a different page, so
+    /// this alone gives viewport-driven, on-demand loading without any manual scroll tracking.
+    /// </remarks>
+    private void OnTileLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: PageTileViewModel tile } element)
+        {
+            return;
+        }
+
+        if (tile.Thumbnail is not null)
+        {
+            // Already rendered from an earlier realization of this or another container; no
+            // need to re-render just because recycling walked the container past it again.
+            return;
+        }
+
+        var dpiScale = VisualTreeHelper.GetDpi(element).DpiScaleX;
+        // Matches Themes/Components.xaml's Lumen.PageTile.Width; used only if this fires before
+        // layout has given the container a real ActualWidth, which should not normally happen.
+        var logicalWidth = element.ActualWidth > 0 ? element.ActualWidth : 156;
+        var pixelWidth = (int)Math.Ceiling(logicalWidth * dpiScale);
+
+        _viewModel.RequestThumbnail(tile.PageIndex, pixelWidth);
+    }
+
     // ===================== Selection =====================
 
     /// <summary>
