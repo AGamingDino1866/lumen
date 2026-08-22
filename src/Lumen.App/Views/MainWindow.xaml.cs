@@ -12,6 +12,7 @@ using Lumen.App.ViewModels;
 using Lumen.Core.Settings;
 using Wpf.Ui.Controls;
 using Button = System.Windows.Controls.Button;
+using ListViewItem = System.Windows.Controls.ListViewItem;
 using Path = System.Windows.Shapes.Path;
 using TextBox = System.Windows.Controls.TextBox;
 using MessageBox = System.Windows.MessageBox;
@@ -254,6 +255,33 @@ public partial class MainWindow : FluentWindow
     }
 
     // ===================== Selection =====================
+
+    /// <summary>
+    /// Makes a plain click toggle that page and accumulate, with no modifier key needed.
+    /// Extended selection's own default is to replace the whole selection on a plain click and
+    /// only accumulate on Ctrl+Click; that default is suppressed here, and Shift+Click is left
+    /// alone so a contiguous range still works the normal way.
+    /// </summary>
+    private void OnTilePreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (Keyboard.Modifiers != ModifierKeys.None || sender is not ListViewItem item)
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        if (PageGrid.SelectedItems.Contains(item.DataContext))
+        {
+            PageGrid.SelectedItems.Remove(item.DataContext);
+        }
+        else
+        {
+            PageGrid.SelectedItems.Add(item.DataContext);
+        }
+
+        item.Focus();
+    }
 
     /// <summary>
     /// Mirrors the ListView's own Extended selection onto the view models.

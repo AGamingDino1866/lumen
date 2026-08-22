@@ -17,7 +17,7 @@ public sealed class LumenSettings
     public string? ProtectedApiKey { get; set; }
 
     /// <summary>Gemini model id. Flash is the right cost/quality point for OCR.</summary>
-    public string Model { get; set; } = "gemini-2.5-flash";
+    public string Model { get; set; } = "gemini-3.7-flash";
 
     /// <summary>"System", "Light", or "Dark".</summary>
     public string ThemeMode { get; set; } = "System";

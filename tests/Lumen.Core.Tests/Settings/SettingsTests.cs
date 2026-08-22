@@ -25,7 +25,7 @@ public sealed class SettingsStoreTests : IDisposable
     {
         var settings = new SettingsStore(_dir).Load();
 
-        settings.Model.Should().Be("gemini-2.5-flash");
+        settings.Model.Should().Be("gemini-3.7-flash");
         settings.ThemeMode.Should().Be("System");
         settings.ExportPageBreaks.Should().BeTrue("the user chose page breaks as the default");
         settings.ExportPageHeadings.Should().BeTrue();
@@ -59,7 +59,7 @@ public sealed class SettingsStoreTests : IDisposable
 
         var settings = new SettingsStore(_dir).Load();
 
-        settings.Model.Should().Be("gemini-2.5-flash", "a corrupt file must fall back to defaults");
+        settings.Model.Should().Be("gemini-3.7-flash", "a corrupt file must fall back to defaults");
         Directory.GetFiles(_dir, "*.corrupt").Should().NotBeEmpty("the bad file must be preserved for diagnosis");
     }
 

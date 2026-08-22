@@ -29,11 +29,19 @@ public static class GeminiErrorMapper
         HttpStatusCode.RequestTimeout =>
             "The request to Gemini timed out. Check your connection and retry this page.",
 
+        HttpStatusCode.NotFound =>
+            "The selected model isn't available for this key. Google periodically retires model " +
+            "versions — try a different model in Settings.",
+
         _ when (int)status >= 500 =>
             "Gemini is currently unavailable. This is a problem on Google's side, so try again shortly.",
 
+        // The specific code is included here, unlike every case above: those are all common,
+        // well-understood outcomes with a clear next step, but reaching this branch means
+        // something genuinely unanticipated happened, and the code is the one piece of evidence
+        // that turns "try again" into an actual diagnosis next time.
         _ =>
-            "Gemini could not process this page. Retry it, or continue with the other pages."
+            $"Gemini could not process this page (HTTP {(int)status}). Retry it, or continue with the other pages."
     };
 
     /// <summary>Message for a response that arrived but could not be understood.</summary>

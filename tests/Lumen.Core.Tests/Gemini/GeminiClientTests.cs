@@ -251,4 +251,23 @@ public class GeminiClientTests
             .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
             .ErrorMessage.Should().Be("Gemini is rate limiting this key. Wait a moment and retry the remaining pages.");
     }
+
+    [Fact]
+    public async Task Validate_key_surfaces_a_retired_model_distinctly_from_a_bad_key()
+    {
+        // A 404 here means Google no longer serves this model version at all -- a distinct,
+        // actionable case from a rejected key, which previously fell into the same generic
+        // catch-all message as every other unmapped status.
+        (await Client(new StubHandler(HttpStatusCode.NotFound, "{}"))
+            .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
+            .ErrorMessage.Should().Contain("model").And.Contain("Settings");
+    }
+
+    [Fact]
+    public async Task Unmapped_status_codes_include_the_code_itself()
+    {
+        (await Client(new StubHandler(HttpStatusCode.Conflict, "{}"))
+            .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
+            .ErrorMessage.Should().Contain("409");
+    }
 }

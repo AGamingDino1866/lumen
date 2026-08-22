@@ -327,6 +327,12 @@
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
+                            <!-- A plain click just toggles that page, accumulating, with no
+                                 modifier key needed. Extended mode's own default is to replace
+                                 the whole selection on a plain click and only accumulate on
+                                 Ctrl+Click. Shift+Click still falls through to native Extended
+                                 behaviour for a contiguous range. -->
+                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnTilePreviewMouseDown" />
                         </Style>
                     </ListView.ItemContainerStyle>
 
