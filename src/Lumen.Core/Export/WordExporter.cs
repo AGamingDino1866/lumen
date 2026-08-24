@@ -37,6 +37,15 @@ public static class WordExporter
     private const string BodyFont = "Calibri";
     private const int ListNumberId = 1;
 
+    /// <summary>
+    /// Word renders complex-script text (Arabic, Urdu, Hebrew, ...) using whatever font is set
+    /// in the run's <c>cs</c> (complex-script) font slot, not its regular ascii/high-ANSI slot --
+    /// leaving that slot unset just falls back to Word's own default, which is legible for
+    /// Arabic but wrong for Urdu, whose Nastaliq calligraphic style Jameel Noor Nastaliq is
+    /// purpose-built for and generic Arabic fonts do not attempt.
+    /// </summary>
+    private const string UrduFont = "Jameel Noor Nastaliq";
+
     public static void Write(Stream target, IReadOnlyList<ExportPage> pages, WordExportOptions options)
     {
         ArgumentNullException.ThrowIfNull(target);
@@ -91,12 +100,14 @@ public static class WordExporter
                 var paragraph = new Paragraph(new ParagraphProperties(
                     new ParagraphStyleId { Val = $"Heading{level}" }));
                 AppendRuns(paragraph, heading.Inlines);
+                ApplyRtlIfNeeded(paragraph, IsRightToLeft(heading.Inlines));
                 body.AppendChild(paragraph);
                 break;
 
             case MdParagraph para:
                 var p = new Paragraph();
                 AppendRuns(p, para.Inlines);
+                ApplyRtlIfNeeded(p, IsRightToLeft(para.Inlines));
                 body.AppendChild(p);
                 break;
 
@@ -112,6 +123,8 @@ public static class WordExporter
                 break;
 
             case MdCode code:
+                // Code is never a natural-language script regardless of the surrounding
+                // document's direction, so it is deliberately left out of RTL detection.
                 foreach (var line in code.Code.Split('\n'))
                 {
                     body.AppendChild(new Paragraph(
@@ -121,6 +134,35 @@ public static class WordExporter
                 break;
         }
     }
+
+    /// <summary>
+    /// Marks a paragraph right-to-left the way Word actually needs it: <c>&lt;w:bidi/&gt;</c> on
+    /// the paragraph (so the paragraph mark, default alignment, and indentation all flip) and
+    /// <c>&lt;w:rtl/&gt;</c> on every run in it (so Word applies the Unicode bidi algorithm to
+    /// that run's complex-script text instead of treating it as embedded LTR content). Setting
+    /// only one of the two produces a paragraph that reads correctly on screen but exports or
+    /// re-flows wrong the moment Word itself re-lays it out.
+    /// </summary>
+    private static void ApplyRtlIfNeeded(Paragraph paragraph, bool isRightToLeft)
+    {
+        if (!isRightToLeft)
+        {
+            return;
+        }
+
+        paragraph.ParagraphProperties ??= new ParagraphProperties();
+        paragraph.ParagraphProperties.AppendChild(new BiDi());
+
+        foreach (var run in paragraph.Elements<Run>())
+        {
+            run.RunProperties ??= new RunProperties();
+            run.RunProperties.AppendChild(new RightToLeftText());
+            run.RunProperties.AppendChild(new RunFonts { ComplexScript = UrduFont });
+        }
+    }
+
+    private static bool IsRightToLeft(IReadOnlyList<MdInline> inlines) =>
+        TextDirectionDetector.IsPredominantlyRightToLeft(string.Concat(inlines.Select(i => i.Text)));
 
     private static void AppendRuns(Paragraph paragraph, IReadOnlyList<MdInline> inlines)
     {
@@ -161,7 +203,15 @@ public static class WordExporter
     {
         var table = new Table();
 
-        table.AppendChild(new TableProperties(
+        // One direction for the whole table, decided from all of its text at once: a table
+        // mixing cell-by-cell direction would visually scramble which column means what, since
+        // bidiVisual reverses the entire column order rather than each cell independently.
+        var isRightToLeft = TextDirectionDetector.IsPredominantlyRightToLeft(
+            string.Concat(source.Header.Concat(source.Rows.SelectMany(r => r))
+                .SelectMany(c => c.Inlines)
+                .Select(i => i.Text)));
+
+        var tableProperties = new TableProperties(
             new TableBorders(
                 new TopBorder { Val = BorderValues.Single, Size = 4 },
                 new BottomBorder { Val = BorderValues.Single, Size = 4 },
@@ -169,7 +219,15 @@ public static class WordExporter
                 new RightBorder { Val = BorderValues.Single, Size = 4 },
                 new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4 },
                 new InsideVerticalBorder { Val = BorderValues.Single, Size = 4 }),
-            new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct }));
+            new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct });
+
+        if (isRightToLeft)
+        {
+            tableProperties.AppendChild(new TableJustification { Val = TableRowAlignmentValues.Right });
+            tableProperties.AppendChild(new BiDiVisual());
+        }
+
+        table.AppendChild(tableProperties);
 
         if (source.Header.Count > 0)
         {
@@ -181,7 +239,7 @@ public static class WordExporter
 
             foreach (var cell in source.Header)
             {
-                headerRow.AppendChild(BuildCell(cell, bold: true));
+                headerRow.AppendChild(BuildCell(cell, bold: true, isRightToLeft));
             }
 
             table.AppendChild(headerRow);
@@ -193,7 +251,7 @@ public static class WordExporter
 
             foreach (var cell in row)
             {
-                tableRow.AppendChild(BuildCell(cell, bold: false));
+                tableRow.AppendChild(BuildCell(cell, bold: false, isRightToLeft));
             }
 
             table.AppendChild(tableRow);
@@ -202,7 +260,7 @@ public static class WordExporter
         return table;
     }
 
-    private static TableCell BuildCell(MdCell cell, bool bold)
+    private static TableCell BuildCell(MdCell cell, bool bold, bool isRightToLeft)
     {
         var paragraph = new Paragraph();
 
@@ -219,6 +277,8 @@ public static class WordExporter
             }
         }
 
+        ApplyRtlIfNeeded(paragraph, isRightToLeft);
+
         return new TableCell(
             new TableCellProperties(new TableCellWidth { Type = TableWidthUnitValues.Auto }),
             paragraph);
@@ -234,6 +294,7 @@ public static class WordExporter
                 new NumberingId { Val = ordered ? ListNumberId + 1 : ListNumberId })));
 
         AppendRuns(paragraph, item.Inlines);
+        ApplyRtlIfNeeded(paragraph, IsRightToLeft(item.Inlines));
         return paragraph;
     }
 

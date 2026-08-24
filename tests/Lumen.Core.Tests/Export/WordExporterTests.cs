@@ -290,6 +290,81 @@ public class WordExporterTests
 
         act.Should().Throw<ArgumentNullException>();
     }
+
+    [Fact]
+    public void Urdu_paragraph_gets_bidi_and_rtl_run_marks()
+    {
+        using var stream = Export("یہ ایک اردو پیراگراف ہے جو صفحے پر لکھا گیا ہے۔");
+        var body = BodyOf(stream);
+        var paragraph = body.Elements<Paragraph>().First(p => p.InnerText.Length > 0);
+
+        paragraph.ParagraphProperties?.GetFirstChild<BiDi>().Should().NotBeNull(
+            "the paragraph mark and default alignment must flip for Word to lay this out correctly");
+
+        paragraph.Elements<Run>().Should().NotBeEmpty()
+            .And.OnlyContain(r => r.RunProperties!.GetFirstChild<RightToLeftText>() != null,
+                "every run in an RTL paragraph needs its own rtl mark, not just the paragraph");
+    }
+
+    [Fact]
+    public void Urdu_heading_gets_bidi_and_rtl_run_marks()
+    {
+        using var stream = Export("# اردو عنوان");
+        var body = BodyOf(stream);
+        var heading = body.Elements<Paragraph>()
+            .First(p => p.ParagraphProperties?.ParagraphStyleId?.Val == "Heading1");
+
+        heading.ParagraphProperties!.GetFirstChild<BiDi>().Should().NotBeNull();
+        heading.Elements<Run>().Should()
+            .OnlyContain(r => r.RunProperties!.GetFirstChild<RightToLeftText>() != null);
+    }
+
+    [Fact]
+    public void Urdu_paragraph_uses_Jameel_Noor_Nastaliq_as_its_complex_script_font()
+    {
+        using var stream = Export("یہ ایک اردو پیراگراف ہے جو صفحے پر لکھا گیا ہے۔");
+        var body = BodyOf(stream);
+        var paragraph = body.Elements<Paragraph>().First(p => p.InnerText.Length > 0);
+
+        paragraph.Elements<Run>().Should().NotBeEmpty()
+            .And.OnlyContain(r => r.RunProperties!.GetFirstChild<RunFonts>()!.ComplexScript == "Jameel Noor Nastaliq",
+                "Word renders complex-script text from the run's cs font slot, not its ascii/high-ANSI slot");
+    }
+
+    [Fact]
+    public void English_paragraph_gets_no_rtl_marks()
+    {
+        using var stream = Export("An ordinary English paragraph.");
+        var body = BodyOf(stream);
+        var paragraph = body.Elements<Paragraph>().First(p => p.InnerText.Length > 0);
+
+        paragraph.ParagraphProperties?.GetFirstChild<BiDi>().Should().BeNull();
+        paragraph.Elements<Run>().Should()
+            .OnlyContain(r => r.RunProperties == null || r.RunProperties.GetFirstChild<RightToLeftText>() == null);
+    }
+
+    [Fact]
+    public void A_predominantly_urdu_table_becomes_a_bidi_visual_table()
+    {
+        var md = "| نام | عمر |\n|---|---|\n| علی | 25 |";
+
+        using var stream = Export(md);
+        var table = BodyOf(stream).Elements<Table>().First();
+
+        table.GetFirstChild<TableProperties>()!.GetFirstChild<BiDiVisual>().Should().NotBeNull(
+            "otherwise Word keeps the visual column order left-to-right for a right-to-left table");
+    }
+
+    [Fact]
+    public void An_english_table_does_not_get_bidi_visual()
+    {
+        var md = "| Name | Age |\n|---|---|\n| Ada | 30 |";
+
+        using var stream = Export(md);
+        var table = BodyOf(stream).Elements<Table>().First();
+
+        table.GetFirstChild<TableProperties>()!.GetFirstChild<BiDiVisual>().Should().BeNull();
+    }
 }
 
 public class TextExportersTests
