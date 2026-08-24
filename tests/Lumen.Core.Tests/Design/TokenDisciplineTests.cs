@@ -79,6 +79,44 @@ public class TokenDisciplineTests
             "the primitives layer is where raw colour values belong");
     }
 
+    /// <summary>
+    /// Every declared &lt;Color&gt; value is a syntactically valid hex colour: exactly 3, 6, or 8
+    /// hex digits, nothing more and nothing less.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="HexColour"/> only ever <em>finds</em> well-formed hex runs; it was never meant
+    /// to prove a declared value is well-formed, and a malformed one (an extra stray byte, say)
+    /// simply fails to match anywhere and is silently invisible to every other test in this
+    /// class. This is what actually caught #FF33291180 -- ten hex digits, one too many -- which
+    /// XamlParseException only surfaced at runtime, the first time dark mode tried to render a
+    /// queued-page status chip. Lumen.Core cannot reference WPF, so this validates the hex
+    /// grammar directly rather than asking System.Windows.Media.ColorConverter to parse it.
+    /// </remarks>
+    [Fact]
+    public void Every_declared_colour_has_a_valid_hex_length()
+    {
+        var primitives = XamlFiles()
+            .First(f => Path.GetFileName(f).Equals(PrimitivesFile, StringComparison.OrdinalIgnoreCase));
+
+        var declared = Regex.Matches(
+            File.ReadAllText(primitives),
+            @"<Color\s+x:Key=""(?<key>[^""]+)"">(?<value>[^<]+)</Color>");
+
+        declared.Should().NotBeEmpty("otherwise this test is silently vacuous");
+
+        var malformed = declared
+            .Cast<Match>()
+            .Where(m => !Regex.IsMatch(
+                m.Groups["value"].Value.Trim(),
+                @"^#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$"))
+            .Select(m => $"{m.Groups["key"].Value} = {m.Groups["value"].Value.Trim()}")
+            .ToList();
+
+        malformed.Should().BeEmpty(
+            "a hex colour must be exactly 3, 6, or 8 digits; anything else fails only at runtime, " +
+            "inside whichever converter or binding first happens to touch it");
+    }
+
     [Fact]
     public void Light_and_dark_semantic_layers_define_the_same_keys()
     {

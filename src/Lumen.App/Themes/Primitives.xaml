@@ -59,7 +59,7 @@
 
     <!-- Dark-theme status backgrounds: deep tints rather than the light pastels, which
          would glare against a dark canvas. -->
-    <Color x:Key="Lumen.Primitive.PastelDark.Yellow">#FF33291180</Color>
+    <Color x:Key="Lumen.Primitive.PastelDark.Yellow">#FF332911</Color>
     <Color x:Key="Lumen.Primitive.PastelDark.YellowText">#FFE0B650</Color>
     <Color x:Key="Lumen.Primitive.PastelDark.Blue">#FF14283A</Color>
     <Color x:Key="Lumen.Primitive.PastelDark.BlueText">#FF7FC1EE</Color>
