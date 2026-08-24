@@ -27,6 +27,7 @@
         <conv:AspectRatioToHeightConverter x:Key="AspectToHeight" />
         <conv:StatusToBackgroundConverter x:Key="StatusBackground" />
         <conv:StatusToForegroundConverter x:Key="StatusForeground" />
+        <conv:TextToFlowDirectionConverter x:Key="TextFlowDirection" />
     </ui:FluentWindow.Resources>
 
     <ui:FluentWindow.InputBindings>
@@ -630,6 +631,7 @@
 
                                             <!-- Transcription -->
                                             <TextBox Text="{Binding Markdown, Mode=OneWay}"
+                                                     FlowDirection="{Binding Markdown, Converter={StaticResource TextFlowDirection}}"
                                                      IsReadOnly="True"
                                                      BorderThickness="0"
                                                      Background="Transparent"

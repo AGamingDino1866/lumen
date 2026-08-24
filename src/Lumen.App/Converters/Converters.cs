@@ -3,8 +3,26 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using Lumen.App.ViewModels;
+using Lumen.Core.Markdown;
 
 namespace Lumen.App.Converters;
+
+/// <summary>
+/// Right-to-left for predominantly Urdu/Arabic/Hebrew text, left-to-right otherwise. A results
+/// panel that always renders left-to-right puts RTL scripts through the wrong paragraph
+/// direction -- wrapping runs the wrong way and the block starts from the wrong margin, even
+/// though the individual glyphs still shape correctly.
+/// </summary>
+public sealed class TextToFlowDirectionConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        TextDirectionDetector.IsPredominantlyRightToLeft(value as string)
+            ? FlowDirection.RightToLeft
+            : FlowDirection.LeftToRight;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
 
 /// <summary>Visible when the bound value is true.</summary>
 public sealed class BoolToVisibilityConverter : IValueConverter
