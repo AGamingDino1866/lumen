@@ -62,12 +62,13 @@
                       Padding="10,7"
                       SelectionChanged="OnModelChanged"
                       AutomationProperties.Name="Gemini model">
+                <ComboBoxItem Content="gemini-3.5-flash-lite" Tag="gemini-3.5-flash-lite" />
                 <ComboBoxItem Content="gemini-3.7-flash" Tag="gemini-3.7-flash" />
                 <ComboBoxItem Content="gemini-2.5-pro" Tag="gemini-2.5-pro" />
             </ComboBox>
 
             <TextBlock Style="{StaticResource Lumen.TextStyle.Small}"
-                       Text="Flash is the right cost and quality point for transcription. Pro is slower and more expensive, and is worth trying on unusually dense or difficult scans."
+                       Text="Flash Lite is the fastest and cheapest, and the default. Flash trades some speed for quality on messier scans. Pro is slower and more expensive, worth trying only on unusually dense or difficult pages."
                        TextWrapping="Wrap"
                        Margin="2,6,0,0" />
 
