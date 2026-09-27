@@ -21,8 +21,15 @@ internal static class Program
     private static readonly string ExePath = ResolveExePath();
     private static readonly string FixturePdf = Path.Combine(RepoRoot, "tests", "Lumen.Core.Tests", "Fixtures", "sample.pdf");
 
-    private static int Main()
+    private static int Main(string[] args)
     {
+        if (args.Contains("--verify-update"))
+        {
+            VerifyUpdateFlow();
+            Console.WriteLine("Done.");
+            return 0;
+        }
+
         Directory.CreateDirectory(OutDir);
         Console.WriteLine($"Exe:     {ExePath}");
         Console.WriteLine($"Fixture: {FixturePdf}");
@@ -34,6 +41,107 @@ internal static class Program
 
         Console.WriteLine("Done.");
         return 0;
+    }
+
+    /// <summary>
+    /// One-off verification of the real opt-in auto-update cycle: launches the actual installed
+    /// Lumen.exe (so the relaunch-after-update watcher, which targets whatever directory it was
+    /// running from, points at the real install location) with
+    /// LUMEN_UPDATE_TEST_CURRENT_VERSION set to something older than the published release, so
+    /// the real UpdateCheckService (not the LUMEN_UI_TEST double) reports one available. Reuses
+    /// the already-saved, DPAPI-protected API key from the real settings file -- decryptable
+    /// under this same Windows user regardless of which app-data folder holds it -- so the run
+    /// reaches the update check at all instead of stopping at the key gate. Not part of the
+    /// screenshot flow and not meant to be run routinely; this exists to prove the feature works
+    /// against the real, currently-published GitHub release, once.
+    /// </summary>
+    private static void VerifyUpdateFlow()
+    {
+        var installedExe = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Programs", "Lumen", "Lumen.exe");
+
+        if (!File.Exists(installedExe))
+        {
+            throw new FileNotFoundException("Lumen is not installed at the expected location.", installedExe);
+        }
+
+        var realSettingsPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Lumen", "settings.json");
+        var protectedKey = System.Text.Json.JsonDocument.Parse(File.ReadAllText(realSettingsPath))
+            .RootElement.GetProperty("protectedApiKey").GetString();
+
+        var appData = Path.Combine(Path.GetTempPath(), "LumenUpdateVerify-" + Guid.NewGuid());
+        Directory.CreateDirectory(appData);
+        File.WriteAllText(Path.Combine(appData, "settings.json"),
+            $$"""{ "schemaVersion": 1, "protectedApiKey": {{System.Text.Json.JsonSerializer.Serialize(protectedKey)}} }""");
+
+        var psi = new ProcessStartInfo(installedExe) { UseShellExecute = false };
+        psi.Environment["LUMEN_APPDATA_OVERRIDE"] = appData;
+        psi.Environment["LUMEN_UPDATE_TEST_CURRENT_VERSION"] = "1.0.0";
+
+        var process = Process.Start(psi)!;
+        using var automation = new UIA3Automation();
+
+        Console.WriteLine($"Launched installed Lumen (PID {process.Id}) reporting itself as 1.0.0...");
+
+        var window = Retry.WhileNull(
+            () => automation.GetDesktop().FindFirstDescendant(
+                cf => cf.ByName("Lumen").And(cf.ByProcessId(process.Id))),
+            TimeSpan.FromSeconds(20)).Result?.AsWindow()
+            ?? throw new InvalidOperationException("Main window never appeared.");
+
+        Console.WriteLine("Main window found; waiting for the update prompt...");
+
+        var dialog = Retry.WhileNull(
+            () => automation.GetDesktop().FindFirstDescendant(cf => cf.ByName("Lumen update")),
+            TimeSpan.FromSeconds(20)).Result?.AsWindow()
+            ?? throw new InvalidOperationException("Update prompt never appeared -- CheckAsync did not report an update.");
+
+        Console.WriteLine("Update prompt found. Clicking Update...");
+
+        dialog.FindFirstDescendant(cf => cf.ByName("Update"))!.AsButton().Invoke();
+
+        Console.WriteLine("Waiting for the download to finish and Lumen to exit itself (up to 90s)...");
+        var exited = WaitFor(() => process.HasExited, TimeSpan.FromSeconds(90));
+        Console.WriteLine($"Original Lumen process (PID {process.Id}) exited: {exited}");
+
+        Console.WriteLine("Waiting for the relaunch watcher to bring Lumen back up (up to 60s)...");
+        var relaunched = WaitFor(
+            () => Process.GetProcessesByName("Lumen").Any(p => p.Id != process.Id),
+            TimeSpan.FromSeconds(60));
+        Console.WriteLine($"A new Lumen.exe process appeared after the update: {relaunched}");
+
+        var installedVersion = File.Exists(installedExe)
+            ? System.Diagnostics.FileVersionInfo.GetVersionInfo(installedExe).FileVersion
+            : "(missing)";
+        Console.WriteLine($"Installed Lumen.exe FileVersion after the update: {installedVersion}");
+
+        try
+        {
+            Directory.Delete(appData, recursive: true);
+        }
+        catch
+        {
+            // Best-effort.
+        }
+    }
+
+    private static bool WaitFor(Func<bool> condition, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (condition())
+            {
+                return true;
+            }
+
+            Thread.Sleep(500);
+        }
+
+        return condition();
     }
 
     /// <summary>
