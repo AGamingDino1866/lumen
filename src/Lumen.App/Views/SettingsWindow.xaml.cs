@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using Lumen.App.Services;
 using Lumen.App.ViewModels;
+using Lumen.Core.Settings;
 
 namespace Lumen.App.Views;
 
@@ -21,6 +22,12 @@ public partial class SettingsWindow : Window
         InitializeComponent();
 
         MaskedKeyText.Text = viewModel.MaskedApiKey;
+
+        foreach (var model in LumenSettings.SupportedModels)
+        {
+            ModelCombo.Items.Add(new ComboBoxItem { Content = model, Tag = model });
+        }
+
         SelectByTag(ModelCombo, viewModel.SelectedModel);
         SelectByTag(ThemeCombo, viewModel.Settings.ThemeMode);
         PageBreaksCheck.IsChecked = viewModel.Settings.ExportPageBreaks;

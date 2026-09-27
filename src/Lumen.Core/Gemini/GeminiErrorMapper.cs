@@ -12,13 +12,55 @@ namespace Lumen.Core.Gemini;
 /// </remarks>
 public static class GeminiErrorMapper
 {
-    public static string ToUserMessage(HttpStatusCode status) => status switch
+    /// <summary>Message for a key the API refused, whatever status it arrived under.</summary>
+    public const string KeyRejected =
+        "That API key was rejected. Check or replace your key in Settings.";
+
+    /// <summary>Message for a key whose project has not enabled the API.</summary>
+    public const string ApiNotEnabled =
+        "This key's Google project does not have the Generative Language API enabled. " +
+        "Enable it in Google AI Studio, then try again.";
+
+    public static string ToUserMessage(HttpStatusCode status) => ToUserMessage(status, null);
+
+    /// <summary>
+    /// Maps a failed response to a message, preferring the machine-readable reason in
+    /// <paramref name="payload"/> over the bare status.
+    /// </summary>
+    /// <remarks>
+    /// The status alone misdiagnoses the single most common first-run failure: Google reports a
+    /// rejected key as <c>400 INVALID_ARGUMENT</c>, never 401, so a mistyped key would otherwise
+    /// be reported as a malformed page and send the user looking at their PDF instead of their
+    /// key. Only Google's fixed reason vocabulary is matched, never the free-text message, which
+    /// is not a stable contract and is not guaranteed to be free of the request's own contents.
+    /// </remarks>
+    /// <param name="payload">The error response body, or null when there was none.</param>
+    public static string ToUserMessage(HttpStatusCode status, string? payload)
+    {
+        if (payload is { Length: > 0 })
+        {
+            if (payload.Contains("API_KEY_INVALID", StringComparison.Ordinal) ||
+                payload.Contains("API_KEY_SERVICE_BLOCKED", StringComparison.Ordinal))
+            {
+                return KeyRejected;
+            }
+
+            if (payload.Contains("SERVICE_DISABLED", StringComparison.Ordinal) ||
+                payload.Contains("ACCESS_TOKEN_SCOPE_INSUFFICIENT", StringComparison.Ordinal))
+            {
+                return ApiNotEnabled;
+            }
+        }
+
+        return FromStatus(status);
+    }
+
+    private static string FromStatus(HttpStatusCode status) => status switch
     {
         HttpStatusCode.BadRequest =>
             "Gemini rejected this page. The image may be too large or the page may be malformed.",
 
-        HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden =>
-            "That API key was rejected. Check or replace your key in Settings.",
+        HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => KeyRejected,
 
         HttpStatusCode.TooManyRequests =>
             "Gemini is rate limiting this key. Wait a moment and retry the remaining pages.",
@@ -51,6 +93,11 @@ public static class GeminiErrorMapper
     /// <summary>Message for a network-level failure before any response arrived.</summary>
     public const string NetworkFailure =
         "Lumen could not reach Gemini. Check your internet connection and retry.";
+
+    /// <summary>Message for a reply that ran out of output budget before the page ended.</summary>
+    public const string Truncated =
+        "Gemini ran out of room before the end of this page, so the transcription is incomplete. " +
+        "Retry this page.";
 
     /// <summary>Message for a page the model declined to transcribe.</summary>
     public const string Blocked =

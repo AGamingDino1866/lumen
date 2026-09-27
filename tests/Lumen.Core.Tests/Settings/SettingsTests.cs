@@ -25,7 +25,7 @@ public sealed class SettingsStoreTests : IDisposable
     {
         var settings = new SettingsStore(_dir).Load();
 
-        settings.Model.Should().Be("gemini-3.5-flash-lite");
+        settings.Model.Should().Be(LumenSettings.DefaultModel);
         settings.ThemeMode.Should().Be("System");
         settings.ExportPageBreaks.Should().BeTrue("the user chose page breaks as the default");
         settings.ExportPageHeadings.Should().BeTrue();
@@ -38,7 +38,7 @@ public sealed class SettingsStoreTests : IDisposable
     {
         var store = new SettingsStore(_dir);
         var saved = store.Load();
-        saved.Model = "gemini-2.5-pro";
+        saved.Model = "gemini-3.1-pro-preview";
         saved.ThemeMode = "Dark";
         saved.SplitterPosition = 0.42;
         saved.RecentFiles.Add(@"C:\docs\report.pdf");
@@ -46,7 +46,7 @@ public sealed class SettingsStoreTests : IDisposable
 
         var loaded = new SettingsStore(_dir).Load();
 
-        loaded.Model.Should().Be("gemini-2.5-pro");
+        loaded.Model.Should().Be("gemini-3.1-pro-preview");
         loaded.ThemeMode.Should().Be("Dark");
         loaded.SplitterPosition.Should().Be(0.42);
         loaded.RecentFiles.Should().ContainSingle().Which.Should().Be(@"C:\docs\report.pdf");
@@ -59,20 +59,50 @@ public sealed class SettingsStoreTests : IDisposable
 
         var settings = new SettingsStore(_dir).Load();
 
-        settings.Model.Should().Be("gemini-3.5-flash-lite", "a corrupt file must fall back to defaults");
+        settings.Model.Should().Be(LumenSettings.DefaultModel, "a corrupt file must fall back to defaults");
         Directory.GetFiles(_dir, "*.corrupt").Should().NotBeEmpty("the bad file must be preserved for diagnosis");
+    }
+
+    [Theory]
+    [InlineData("gemini-2.5-flash")] // retired by Google; guards against this exact regression
+    [InlineData("gemini-1.0-pro")]
+    [InlineData("")]
+    [InlineData("not-a-model")]
+    public void Unsupported_model_falls_back_to_the_default(string stored)
+    {
+        File.WriteAllText(
+            Path.Combine(_dir, "settings.json"),
+            $$"""{ "model": "{{stored}}" }""");
+
+        // A model id that is not real is not a cosmetic problem: it goes into the request URL,
+        // so every page of every run 404s and the app looks completely broken.
+        new SettingsStore(_dir).Load().Model.Should().Be(LumenSettings.DefaultModel);
+    }
+
+    [Fact]
+    public void Every_supported_model_survives_a_round_trip()
+    {
+        foreach (var model in LumenSettings.SupportedModels)
+        {
+            var store = new SettingsStore(_dir);
+            var settings = store.Load();
+            settings.Model = model;
+            store.Save(settings);
+
+            new SettingsStore(_dir).Load().Model.Should().Be(model);
+        }
     }
 
     [Fact]
     public void Tolerates_unknown_fields()
     {
         File.WriteAllText(Path.Combine(_dir, "settings.json"),
-            """{ "model": "gemini-2.5-pro", "somethingFromAFutureVersion": 123 }""");
+            """{ "model": "gemini-3.1-pro-preview", "somethingFromAFutureVersion": 123 }""");
 
         var act = () => new SettingsStore(_dir).Load();
 
         act.Should().NotThrow();
-        act().Model.Should().Be("gemini-2.5-pro");
+        act().Model.Should().Be("gemini-3.1-pro-preview");
     }
 
     [Fact]

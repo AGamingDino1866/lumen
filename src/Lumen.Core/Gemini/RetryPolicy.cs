@@ -77,9 +77,15 @@ public sealed class RetryPolicy
     }
 
     /// <summary>
-    /// Only 429 and 5xx are worth retrying. A 400 or 403 will fail identically on every attempt,
-    /// so retrying wastes the user's time and quota.
+    /// Only 408, 429 and 5xx are worth retrying. A 400 or 403 will fail identically on every
+    /// attempt, so retrying wastes the user's time and quota.
     /// </summary>
+    /// <remarks>
+    /// 408 is here because <see cref="GeminiClient"/> reports a client-side timeout by asking
+    /// about that status. Omitting it meant every timeout was classified as permanent and the
+    /// retry budget the caller intended to spend on it was silently never used.
+    /// </remarks>
     private static bool IsTransient(HttpStatusCode status) =>
-        status == HttpStatusCode.TooManyRequests || (int)status >= 500;
+        status is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests ||
+        (int)status >= 500;
 }

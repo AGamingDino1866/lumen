@@ -128,4 +128,16 @@ public class RetryPolicyTests
         draws.Should().HaveCountGreaterThan(1,
             "identical delays would synchronise every client into a thundering herd");
     }
+
+    [Fact]
+    public void Retries_a_request_timeout()
+    {
+        // GeminiClient reports a client-side timeout by asking about this status. Classifying it
+        // as permanent meant every timeout consumed none of the retry budget it was given.
+        new RetryPolicy(maxAttempts: 3, new Random(1))
+            .ShouldRetry(HttpStatusCode.RequestTimeout, attempt: 1, retryAfter: null, out var delay)
+            .Should().BeTrue();
+
+        delay.Should().BePositive();
+    }
 }

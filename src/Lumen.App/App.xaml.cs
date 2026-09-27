@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Threading;
@@ -30,6 +31,27 @@ public partial class App : Application
 
     private ILogService _log = null!;
 
+    /// <summary>
+    /// The handler behind the shared <see cref="HttpClient"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="SocketsHttpHandler.PooledConnectionLifetime"/> is the reason this exists. A
+    /// default HttpClient held for the life of the process never re-resolves DNS, and Lumen is a
+    /// desktop app that stays open for days across sleep, VPN toggles and network changes — so a
+    /// pooled connection to an address Google has since moved keeps being reused and every page
+    /// fails until the user restarts. Recycling connections every two minutes bounds that to one
+    /// stale attempt, which the retry policy already absorbs.
+    /// <para>
+    /// Decompression is enabled because transcriptions are plain text and gzip roughly halves
+    /// what has to come down a slow connection.
+    /// </para>
+    /// </remarks>
+    private static SocketsHttpHandler CreateHandler() => new()
+    {
+        PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+    };
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -42,7 +64,7 @@ public partial class App : Application
 
         Http = Environment.GetEnvironmentVariable("LUMEN_UI_TEST") == "1"
             ? new HttpClient(new StubGeminiHandler()) { Timeout = TimeSpan.FromMinutes(2) }
-            : new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
+            : new HttpClient(CreateHandler()) { Timeout = TimeSpan.FromMinutes(2) };
 
         AppPaths.EnsureCreated();
 

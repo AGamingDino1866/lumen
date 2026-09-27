@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -68,6 +69,16 @@ public sealed class GeminiClient : IDisposable
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        // A key is user input that ends up in an HTTP header, where HttpClient rejects anything
+        // outside printable ASCII by throwing. A key copied out of a web page or a chat message
+        // can easily carry a stray newline or zero-width space, and that must read as "this key
+        // is not usable", not as an unhandled exception in the middle of a run.
+        if (!IsHeaderSafe(apiKey))
+        {
+            return PageExtractionResult.Failed(
+                "That API key contains characters Lumen cannot send. Re-copy it and try again.");
+        }
+
         var body = ExtractionRequestBuilder.BuildJson(pngBytes, prompt);
 
         await _concurrency.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -98,12 +109,17 @@ public sealed class GeminiClient : IDisposable
                         continue;
                     }
 
-                    return PageExtractionResult.Failed(GeminiErrorMapper.ToUserMessage(status));
+                    // The body, not just the status, decides the message: Google reports a
+                    // rejected key as a 400, which the status alone would blame on the page.
+                    return PageExtractionResult.Failed(GeminiErrorMapper.ToUserMessage(status, payload));
                 }
-                catch (HttpRequestException)
+                catch (Exception transport) when (transport is HttpRequestException or IOException)
                 {
                     // A transport failure is transient by nature, so it gets the same budget
-                    // as a 5xx before being reported.
+                    // as a 5xx before being reported. IOException is included because a
+                    // connection dropped mid-response surfaces as one rather than as an
+                    // HttpRequestException, and it would otherwise escape this method and break
+                    // the contract that an API-level failure is never thrown.
                     if (_retry.ShouldRetry(HttpStatusCode.ServiceUnavailable, attempt, null, out var delay))
                     {
                         await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
@@ -112,9 +128,13 @@ public sealed class GeminiClient : IDisposable
 
                     return PageExtractionResult.Failed(GeminiErrorMapper.NetworkFailure);
                 }
-                catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
                 {
-                    // A client-side timeout, not a user cancellation.
+                    // A client-side timeout, not a user cancellation. Catching the base type
+                    // rather than TaskCanceledException matters: HttpClient does not guarantee
+                    // which of the two a timeout arrives as, and a bare OperationCanceledException
+                    // would escape to the caller, which reads any such exception as "the user
+                    // cancelled" and would abandon the remaining pages of the run.
                     if (_retry.ShouldRetry(HttpStatusCode.RequestTimeout, attempt, null, out var delay))
                     {
                         await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
@@ -212,11 +232,28 @@ public sealed class GeminiClient : IDisposable
 
             var candidate = response?.Candidates?.FirstOrDefault();
             var parts = candidate?.Content?.Parts;
+            var finish = candidate?.FinishReason;
+
+            // Truncation is the one failure a transcription tool must never report as success:
+            // the reply is perfectly well-formed, it is simply missing the end of the page, and
+            // the user has no way to see that. Surface it so they retry, rather than exporting a
+            // document that quietly lost half a page.
+            if (string.Equals(finish, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase))
+            {
+                return PageExtractionResult.Failed(GeminiErrorMapper.Truncated);
+            }
+
+            if (IsBlockedReason(finish))
+            {
+                return PageExtractionResult.Failed(GeminiErrorMapper.Blocked);
+            }
 
             if (parts is null || parts.Count == 0)
             {
                 // A blank page legitimately produces nothing. The prompt instructs the model to
                 // return empty rather than invent content, so this is a success, not a failure.
+                // Reached only once the reasons above are ruled out: a declined page also arrives
+                // with no parts, and treating it as blank transcribed a refused page as empty.
                 return PageExtractionResult.Ok(string.Empty);
             }
 
@@ -227,6 +264,28 @@ public sealed class GeminiClient : IDisposable
         {
             return PageExtractionResult.Failed(GeminiErrorMapper.MalformedResponse);
         }
+    }
+
+    /// <summary>
+    /// Finish reasons meaning the model declined the page. <c>STOP</c> and an absent reason are
+    /// the normal outcomes and are deliberately not listed.
+    /// </summary>
+    private static bool IsBlockedReason(string? finishReason) => finishReason is not null &&
+        finishReason.ToUpperInvariant() is "SAFETY" or "RECITATION" or "PROHIBITED_CONTENT"
+            or "BLOCKLIST" or "SPII" or "IMAGE_SAFETY";
+
+    /// <summary>True when every character of <paramref name="value"/> can travel in a header.</summary>
+    private static bool IsHeaderSafe(string value)
+    {
+        foreach (var c in value)
+        {
+            if (c < 0x20 || c > 0x7E)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void Dispose() => _concurrency.Dispose();

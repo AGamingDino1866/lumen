@@ -17,7 +17,31 @@ public sealed class LumenSettings
     public string? ProtectedApiKey { get; set; }
 
     /// <summary>Gemini model id. Flash is the right cost/quality point for OCR.</summary>
-    public string Model { get; set; } = "gemini-3.5-flash-lite";
+    public string Model { get; set; } = DefaultModel;
+
+    /// <summary>The model used unless the user picks another.</summary>
+    public const string DefaultModel = "gemini-3.7-flash";
+
+    /// <summary>
+    /// Every model id Lumen will send. A value outside this set is reset to
+    /// <see cref="DefaultModel"/> on load. The Settings window's model picker is built from this
+    /// same array (see SettingsWindow.xaml.cs) rather than its own hardcoded copy, specifically
+    /// so this is the one place that can go stale, not two.
+    /// </summary>
+    /// <remarks>
+    /// This list is the whole reason the app can be trusted to start in a working state. The
+    /// model id is part of the request URL, so a value that is not a real model is not a cosmetic
+    /// problem: every page of every run returns 404 and the app appears completely broken. Google
+    /// retires model ids over time -- the 2.x generation previously listed here is gone -- so this
+    /// array needs the occasional refresh against Google's current model list, not just protection
+    /// against a hand-edited or typo'd settings file.
+    /// </remarks>
+    public static readonly string[] SupportedModels =
+    [
+        "gemini-3.5-flash-lite",
+        "gemini-3.7-flash",
+        "gemini-3.1-pro-preview"
+    ];
 
     /// <summary>"System", "Light", or "Dark".</summary>
     public string ThemeMode { get; set; } = "System";

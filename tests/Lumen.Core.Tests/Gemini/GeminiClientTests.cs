@@ -270,4 +270,189 @@ public class GeminiClientTests
             .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None))
             .ErrorMessage.Should().Contain("409");
     }
+
+    // ------------------------------------------------------------------ rejected key as a 400
+
+    /// <summary>
+    /// The shape Google actually returns for a bad key: HTTP 400, not 401. Reading the status
+    /// alone reported this as "the page may be malformed", which sends the user to inspect their
+    /// PDF over what is really a two-character typo in their key.
+    /// </summary>
+    private const string InvalidKeyBody = """
+        {
+          "error": {
+            "code": 400,
+            "message": "API key not valid. Please pass a valid API key.",
+            "status": "INVALID_ARGUMENT",
+            "details": [ { "reason": "API_KEY_INVALID" } ]
+          }
+        }
+        """;
+
+    [Fact]
+    public async Task A_rejected_key_returned_as_400_is_reported_as_a_key_problem()
+    {
+        var result = await Client(new StubHandler(HttpStatusCode.BadRequest, InvalidKeyBody))
+            .ExtractAsync(Png, "m", Key, "P", CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Be(GeminiErrorMapper.KeyRejected);
+        result.ErrorMessage.Should().NotContain("malformed");
+    }
+
+    [Fact]
+    public async Task Validating_a_bad_key_says_the_key_is_bad_and_never_echoes_it()
+    {
+        var result = await Client(new StubHandler(HttpStatusCode.BadRequest, InvalidKeyBody))
+            .ValidateKeyAsync(Key, "gemini-2.5-flash", CancellationToken.None);
+
+        result.ErrorMessage.Should().Be(GeminiErrorMapper.KeyRejected);
+        result.ErrorMessage.Should().NotContain(Key);
+    }
+
+    [Fact]
+    public async Task A_project_without_the_api_enabled_is_named_as_such()
+    {
+        const string body = """
+            { "error": { "code": 403, "status": "PERMISSION_DENIED",
+              "details": [ { "reason": "SERVICE_DISABLED" } ] } }
+            """;
+
+        (await Client(new StubHandler(HttpStatusCode.Forbidden, body))
+            .ExtractAsync(Png, "m", Key, "P", CancellationToken.None))
+            .ErrorMessage.Should().Be(GeminiErrorMapper.ApiNotEnabled);
+    }
+
+    [Fact]
+    public async Task A_400_with_no_recognisable_reason_still_blames_the_page()
+    {
+        (await Client(new StubHandler(HttpStatusCode.BadRequest, """{"error":{"message":"boom"}}"""))
+            .ExtractAsync(Png, "m", Key, "P", CancellationToken.None))
+            .ErrorMessage.Should().Contain("page");
+    }
+
+    // ------------------------------------------------------------------ finishReason
+
+    [Fact]
+    public async Task A_truncated_reply_is_a_failure_not_a_silent_half_page()
+    {
+        const string body = """
+            { "candidates": [ { "content": { "parts": [ { "text": "First half of the pa" } ] },
+              "finishReason": "MAX_TOKENS" } ] }
+            """;
+
+        var result = await Client(new StubHandler(HttpStatusCode.OK, body))
+            .ExtractAsync(Png, "m", Key, "P", CancellationToken.None);
+
+        result.Success.Should().BeFalse("a transcription that silently loses the end of the page " +
+                                        "is worse than one that reports it could not finish");
+        result.ErrorMessage.Should().Be(GeminiErrorMapper.Truncated);
+    }
+
+    [Theory]
+    [InlineData("SAFETY")]
+    [InlineData("RECITATION")]
+    [InlineData("PROHIBITED_CONTENT")]
+    [InlineData("BLOCKLIST")]
+    public async Task A_declined_page_is_reported_rather_than_transcribed_as_blank(string reason)
+    {
+        var body = $$"""{ "candidates": [ { "finishReason": "{{reason}}" } ] }""";
+
+        var result = await Client(new StubHandler(HttpStatusCode.OK, body))
+            .ExtractAsync(Png, "m", Key, "P", CancellationToken.None);
+
+        result.Success.Should().BeFalse("a refused page arrives with no parts, exactly like a " +
+                                       "blank one, and must not be exported as empty");
+        result.ErrorMessage.Should().Be(GeminiErrorMapper.Blocked);
+    }
+
+    [Fact]
+    public async Task A_stop_finish_reason_with_no_parts_is_still_a_blank_page()
+    {
+        const string body = """{ "candidates": [ { "finishReason": "STOP" } ] }""";
+
+        (await Client(new StubHandler(HttpStatusCode.OK, body))
+            .ExtractAsync(Png, "m", Key, "P", CancellationToken.None))
+            .Success.Should().BeTrue();
+    }
+
+    // ------------------------------------------------------------------ transport failures
+
+    /// <summary>Throws instead of answering, to stand in for a dead connection.</summary>
+    private sealed class ThrowingHandler(Func<Exception> factory) : HttpMessageHandler
+    {
+        public int CallCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            return Task.FromException<HttpResponseMessage>(factory());
+        }
+    }
+
+    [Fact]
+    public async Task A_dropped_connection_is_a_page_failure_not_an_exception()
+    {
+        // IOException, not HttpRequestException, is what a connection dropped mid-response
+        // surfaces as. It used to escape ExtractAsync and end the whole run.
+        var handler = new ThrowingHandler(() => new IOException("connection reset"));
+        var client = new GeminiClient(new HttpClient(handler), new RetryPolicy(maxAttempts: 1, new Random(1)));
+
+        var act = async () => await client.ExtractAsync(Png, "m", Key, "P", CancellationToken.None);
+
+        await act.Should().NotThrowAsync();
+        (await act()).ErrorMessage.Should().Be(GeminiErrorMapper.NetworkFailure);
+    }
+
+    [Fact]
+    public async Task A_client_timeout_is_retried_and_then_reported_as_a_timeout()
+    {
+        // HttpClient reports its own timeout by throwing a cancellation exception with no
+        // cancellation having been requested. Two things used to go wrong: the bare
+        // OperationCanceledException form escaped as "the user cancelled", and RetryPolicy
+        // classified 408 as permanent so the retry never happened.
+        var handler = new ThrowingHandler(() => new OperationCanceledException("timeout"));
+        var client = new GeminiClient(new HttpClient(handler), new RetryPolicy(maxAttempts: 3, new Random(1)));
+
+        var result = await client.ExtractAsync(Png, "m", Key, "P", CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Be(GeminiErrorMapper.ToUserMessage(HttpStatusCode.RequestTimeout));
+        handler.CallCount.Should().Be(3, "a timeout is transient and must spend its retry budget");
+    }
+
+    [Fact]
+    public async Task A_user_cancellation_still_propagates_rather_than_becoming_a_page_failure()
+    {
+        using var cts = new CancellationTokenSource();
+        var handler = new ThrowingHandler(() =>
+        {
+            cts.Cancel();
+            return new OperationCanceledException(cts.Token);
+        });
+        var client = new GeminiClient(new HttpClient(handler), new RetryPolicy(maxAttempts: 3, new Random(1)));
+
+        var act = async () => await client.ExtractAsync(Png, "m", Key, "P", cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    // ------------------------------------------------------------------ key hygiene
+
+    [Theory]
+    [InlineData("AIza-key-with-a\nnewline")]
+    [InlineData("AIza-key-with-a\u200bzero-width-space")]
+    [InlineData("AIza-key-with-a-\u00e9-accent")]
+    public async Task A_key_that_cannot_travel_in_a_header_is_reported_not_thrown(string badKey)
+    {
+        var stub = new StubHandler(HttpStatusCode.OK, SuccessJson("x"));
+
+        var act = async () => await Client(stub).ExtractAsync(Png, "m", badKey, "P", CancellationToken.None);
+
+        await act.Should().NotThrowAsync("HttpClient throws on such a header, and a pasted key " +
+                                         "picking up a stray character is ordinary user error");
+        (await act()).Success.Should().BeFalse();
+        stub.CallCount.Should().Be(0, "nothing should go over the wire with an unusable key");
+    }
 }

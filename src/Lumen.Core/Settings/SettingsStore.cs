@@ -62,6 +62,14 @@ public sealed class SettingsStore
             }
 
             settings.RecentFiles ??= [];
+
+            // A model id Lumen does not recognise would 404 on every page of every run, which
+            // looks like a total failure of the app rather than one bad setting.
+            if (!LumenSettings.SupportedModels.Contains(settings.Model, StringComparer.Ordinal))
+            {
+                settings.Model = LumenSettings.DefaultModel;
+            }
+
             return settings;
         }
         catch (JsonException)
