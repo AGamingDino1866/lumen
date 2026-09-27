@@ -33,6 +33,7 @@ public partial class MainWindow : FluentWindow
     private readonly IBackdropService _backdrop;
     private readonly IThemeService _theme;
     private readonly ILogService _log;
+    private readonly IUpdateCheckService _updateCheck;
 
     private bool _suppressSelectionSync;
     private readonly string? _pendingFilePath;
@@ -42,12 +43,14 @@ public partial class MainWindow : FluentWindow
         IBackdropService backdrop,
         IThemeService theme,
         ILogService log,
+        IUpdateCheckService updateCheck,
         string? pendingFilePath = null)
     {
         _viewModel = viewModel;
         _backdrop = backdrop;
         _theme = theme;
         _log = log;
+        _updateCheck = updateCheck;
         _pendingFilePath = pendingFilePath;
 
         InitializeComponent();
@@ -87,6 +90,22 @@ public partial class MainWindow : FluentWindow
         }
 
         PageGrid.Focus();
+
+        // Checked once per launch, after the key gate resolves so the update prompt never
+        // competes with the more urgent "no key yet" one. A failed or negative check never
+        // shows anything, so this is safe to fire-and-forget.
+        _ = CheckForUpdatesAsync();
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        var result = await _updateCheck.CheckAsync(CancellationToken.None);
+
+        if (result is { IsAvailable: true, InstallerUrl: { } installerUrl })
+        {
+            var dialog = new UpdateDialog(_updateCheck, result.Version ?? "latest", installerUrl) { Owner = this };
+            dialog.ShowDialog();
+        }
     }
 
     /// <summary>

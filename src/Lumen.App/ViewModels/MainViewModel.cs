@@ -34,6 +34,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IThemeService _theme;
     private readonly IMotionService _motion;
     private readonly ILogService _log;
+    private readonly IUpdateCheckService _updateCheck;
 
     private CancellationTokenSource? _extraction;
     private string? _documentPassword;
@@ -50,7 +51,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IDialogService dialogs,
         IThemeService theme,
         IMotionService motion,
-        ILogService log)
+        ILogService log,
+        IUpdateCheckService updateCheck)
     {
         _settingsStore = settingsStore;
         _secrets = secrets;
@@ -62,6 +64,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _theme = theme;
         _motion = motion;
         _log = log;
+        _updateCheck = updateCheck;
 
         Settings = settings;
         _apiKey = secrets.Unprotect(settings.ProtectedApiKey);

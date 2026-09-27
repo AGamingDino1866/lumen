@@ -89,6 +89,14 @@ public partial class App : Application
         var renderer = new PdfRenderService();
         var geminiClient = new GeminiClient(Http, new RetryPolicy(maxAttempts: 3));
 
+        // Skipped under the UI-test double: hitting the real GitHub API would make the FlaUI
+        // suite and the screenshot tool flaky against an external, rate-limited dependency, and
+        // could pop an unexpected update prompt mid-automation.
+        var isUiTest = Environment.GetEnvironmentVariable("LUMEN_UI_TEST") == "1";
+        IUpdateCheckService updateCheckService = isUiTest
+            ? new NullUpdateCheckService()
+            : new UpdateCheckService(Http);
+
         var viewModel = new MainViewModel(
             settingsStore,
             settings,
@@ -100,14 +108,15 @@ public partial class App : Application
             new DialogService(),
             themeService,
             motionService,
-            _log);
+            _log,
+            updateCheckService);
 
         // A bare, non-flag argument is a PDF path: the "Open with Lumen" file association
         // invokes the exe as `Lumen.exe "%1"`, and the FlaUI suite uses the same mechanism to
         // open its fixture without automating the native file-open dialog.
         var pendingFilePath = e.Args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
 
-        var window = new MainWindow(viewModel, new BackdropService(_log), themeService, _log, pendingFilePath);
+        var window = new MainWindow(viewModel, new BackdropService(_log), themeService, _log, updateCheckService, pendingFilePath);
 
         MainWindow = window;
         window.Show();

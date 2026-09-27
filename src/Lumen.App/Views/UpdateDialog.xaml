@@ -1,0 +1,76 @@
+<Window x:Class="Lumen.App.Views.UpdateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Lumen update"
+        Width="420"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource Lumen.Surface.Canvas}"
+        FontFamily="{DynamicResource Lumen.Primitive.Font.Sans}">
+
+    <!--
+        Checked once per launch, never mid-session: a newer release found on GitHub is asked
+        about here, and declining just means asking again next time Lumen starts, not this
+        session. Accepting swaps this same content for a progress bar in place, then the app
+        exits itself once the download finishes and the installer takes over.
+    -->
+    <Border Padding="28">
+        <StackPanel>
+
+            <TextBlock x:Name="TitleText"
+                       Style="{StaticResource Lumen.TextStyle.Title}"
+                       Text="A new version of Lumen is available" />
+
+            <TextBlock x:Name="BodyText"
+                       Style="{StaticResource Lumen.TextStyle.Secondary}"
+                       Margin="0,8,0,0"
+                       TextWrapping="Wrap" />
+
+            <!-- Question state -->
+            <StackPanel x:Name="QuestionPanel"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,22,0,0">
+                <Button Style="{StaticResource Lumen.Button.Secondary}"
+                        Content="Not now"
+                        IsCancel="True"
+                        Margin="0,0,8,0"
+                        Click="OnDecline" />
+                <Button Style="{StaticResource Lumen.Button.Primary}"
+                        Content="Update"
+                        IsDefault="True"
+                        Click="OnAccept" />
+            </StackPanel>
+
+            <!-- Progress state: swapped in for QuestionPanel once Update is clicked. -->
+            <StackPanel x:Name="ProgressPanel" Visibility="Collapsed" Margin="0,18,0,0">
+                <ProgressBar x:Name="DownloadProgress"
+                             Height="6"
+                             Minimum="0" Maximum="100"
+                             Background="{DynamicResource Lumen.Surface.Sunken}"
+                             Foreground="{DynamicResource Lumen.Accent.Default}"
+                             BorderThickness="0" />
+                <TextBlock x:Name="ProgressText"
+                           Style="{StaticResource Lumen.TextStyle.Small}"
+                           Margin="0,8,0,0"
+                           Text="Downloading update…" />
+            </StackPanel>
+
+            <!-- Error state: shown in place of the progress panel if the download fails. -->
+            <StackPanel x:Name="ErrorPanel" Visibility="Collapsed" Margin="0,18,0,0">
+                <TextBlock x:Name="ErrorText"
+                           Style="{StaticResource Lumen.TextStyle.Small}"
+                           Foreground="{DynamicResource Lumen.Danger.Default}"
+                           TextWrapping="Wrap" />
+                <Button Style="{StaticResource Lumen.Button.Secondary}"
+                        Content="Close"
+                        HorizontalAlignment="Right"
+                        Margin="0,14,0,0"
+                        Click="OnDecline" />
+            </StackPanel>
+
+        </StackPanel>
+    </Border>
+</Window>
